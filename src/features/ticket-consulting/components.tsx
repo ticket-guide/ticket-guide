@@ -1,45 +1,59 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useConsultingStore } from './store';
 import { getCompanies, getQrCodeUrlForType, getModalTitleForType } from './logic';
-import { X, MessageCircle, BadgeCheck, CheckCircle2 } from 'lucide-react';
+import { X, MessageCircle, BadgeCheck, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
 
 const getThemeClasses = (key?: string) => {
     switch (key) {
-        case 'blue': return 'bg-blue-200/90 dark:bg-blue-900/80 border-0 shadow-lg shadow-blue-200/50';
-        case 'purple': return 'bg-purple-200/90 dark:bg-purple-900/80 border-0 shadow-lg shadow-purple-200/50';
-        case 'emerald': return 'bg-emerald-200/90 dark:bg-emerald-900/80 border-0 shadow-lg shadow-emerald-200/50';
-        case 'rose': return 'bg-rose-200/90 dark:bg-rose-900/80 border-0 shadow-lg shadow-rose-200/50';
-        case 'amber': return 'bg-amber-200/90 dark:bg-amber-900/80 border-0 shadow-lg shadow-amber-200/50';
-        default: return 'bg-gray-200/90 dark:bg-zinc-800/90 border-0 shadow-lg';
+        // 배경을 다크 톤 중심(zinc-800/90, 테두리 추가 등)으로 변경
+        case 'blue': return 'bg-zinc-800 border-t-4 border-blue-500 shadow-md shadow-blue-500/10 text-gray-200';
+        case 'purple': return 'bg-zinc-800 border-t-4 border-purple-500 shadow-md shadow-purple-500/10 text-gray-200';
+        case 'emerald': return 'bg-zinc-800 border-t-4 border-emerald-500 shadow-md shadow-emerald-500/10 text-gray-200';
+        case 'rose': return 'bg-zinc-800 border-t-4 border-rose-500 shadow-md shadow-rose-500/10 text-gray-200';
+        case 'amber': return 'bg-zinc-800 border-t-4 border-amber-500 shadow-md shadow-amber-500/10 text-gray-200';
+        default: return 'bg-zinc-800 border-t-4 border-gray-500 shadow-md text-gray-200';
     }
 };
 
 export const CompanyListSection = () => {
     const openModal = useConsultingStore((state) => state.openModal);
     const companies = getCompanies();
+    const [isExpanded, setIsExpanded] = useState(true);
 
     return (
         <div id="company-list-section" className="w-full mt-4 scroll-mt-24">
-            {/* 업체 리스트 그리드 (모바일 1열, 태블릿/PC 2열) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 w-full max-w-5xl mx-auto">
+
+            {/* 펼치기 / 접기 토글 헤더 */}
+            <div className="w-full max-w-5xl mx-auto flex items-center justify-between bg-zinc-900 text-white p-4 sm:p-5 rounded-2xl shadow-md cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
+                <div className="flex items-center gap-3">
+                    <BadgeCheck className="text-blue-400 w-6 h-6" />
+                    <h2 className="text-lg sm:text-xl font-bold">인증된 검증 업체 목록</h2>
+                </div>
+                <button aria-label="Toggle Company List" className="p-2 bg-zinc-800 rounded-full hover:bg-zinc-700 transition">
+                    {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                </button>
+            </div>
+
+            {/* 업체 리스트 그리드 (모바일 1열, 태블릿/PC 2열) - 아코디언 애니메이션 추가 */}
+            <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 w-full max-w-5xl mx-auto transition-all duration-500 overflow-hidden ${isExpanded ? 'opacity-100 max-h-[8000px] mt-6' : 'opacity-0 max-h-0'}`}>
                 {companies.map((company, index) => (
                     <div
                         key={company.id}
-                        className={`group relative backdrop-blur-md rounded-3xl p-6 sm:p-8 transition-all duration-300 flex flex-col h-full animate-fade-in ${getThemeClasses(company.themeKey)}`}
+                        className={`group relative rounded-3xl p-6 sm:p-8 transition-all duration-300 flex flex-col h-full animate-fade-in ${getThemeClasses(company.themeKey)}`}
                         style={{ animationDelay: `${index * 100}ms` }}
                     >
                         {/* 상단: 업체명 */}
                         <div className="flex flex-col mb-4">
-                            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-3 flex items-start gap-2 leading-tight">
+                            <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 flex items-start gap-2 leading-tight">
                                 {company.name}
-                                <BadgeCheck className="text-blue-500 w-5 h-5 sm:w-6 sm:h-6 shrink-0 mt-0.5" />
+                                <BadgeCheck className="text-blue-400 w-5 h-5 sm:w-6 sm:h-6 shrink-0 mt-0.5" />
                             </h3>
                         </div>
 
                         {/* 중단: 설명 텍스트 (flex-grow를 통해 높이를 모두 채워 하단 영역을 밀어냄) */}
-                        <p className="text-gray-600 dark:text-gray-400 mb-6 text-sm sm:text-base leading-relaxed flex-grow">
+                        <p className="text-zinc-400 mb-6 text-sm sm:text-base leading-relaxed flex-grow">
                             {company.description}
                         </p>
 
@@ -47,7 +61,7 @@ export const CompanyListSection = () => {
                         <div className="mt-auto">
                             <div className="flex flex-wrap gap-2 mb-6">
                                 {company.features.map(feat => (
-                                    <span key={feat} className="flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-1 rounded-md border border-emerald-100 dark:border-emerald-800/30">
+                                    <span key={feat} className="flex items-center gap-1 text-[11px] font-medium text-emerald-400 bg-emerald-900/30 px-2.5 py-1 rounded-md border border-emerald-800/50">
                                         <CheckCircle2 className="w-3 h-3 shrink-0" /> {feat}
                                     </span>
                                 ))}
@@ -55,7 +69,7 @@ export const CompanyListSection = () => {
 
                             <button
                                 onClick={() => openModal(company.id)}
-                                className="w-full py-4 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold text-base sm:text-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 overflow-hidden relative"
+                                className="w-full py-4 rounded-xl bg-white text-zinc-900 font-bold text-base sm:text-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 overflow-hidden relative"
                             >
                                 <MessageCircle className="w-5 h-5 shrink-0" /> 실시간 상담 연결
                             </button>
