@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useConsultingStore } from './store';
 import { getCompanies, getQrCodeUrlForType, getModalTitleForType } from './logic';
 import { X, MessageCircle, BadgeCheck, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
@@ -21,6 +21,22 @@ export const CompanyListSection = () => {
     const openModal = useConsultingStore((state) => state.openModal);
     const companies = getCompanies();
     const [isExpanded, setIsExpanded] = useState(true);
+    const [offset, setOffset] = useState(0);
+
+    // 10초마다 배열 offset을 1씩 증가시켜 순환 로테이션 효과 적용
+    useEffect(() => {
+        if (!companies.length) return;
+        const intervalId = setInterval(() => {
+            setOffset((prev) => (prev + 1) % companies.length);
+        }, 10000);
+        return () => clearInterval(intervalId);
+    }, [companies.length]);
+
+    // 현재 offset 계산을 기반으로 업체 배열 재구성
+    const displayCompanies = [
+        ...companies.slice(offset),
+        ...companies.slice(0, offset)
+    ];
 
     return (
         <div id="company-list-section" className="w-full mt-4 scroll-mt-24">
@@ -38,7 +54,7 @@ export const CompanyListSection = () => {
 
             {/* 업체 리스트 그리드 (항상 최대 3열 고정) - 아코디언 애니메이션 추가 */}
             <div className={`grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 w-full max-w-[100rem] mx-auto transition-all duration-500 overflow-hidden ${isExpanded ? 'opacity-100 max-h-[8000px] mt-6' : 'opacity-0 max-h-0'}`}>
-                {companies.map((company, index) => (
+                {displayCompanies.map((company, index) => (
                     <div
                         key={company.id}
                         className={`group relative rounded-2xl p-4 sm:p-6 transition-all duration-300 flex flex-col h-full animate-fade-in ${getThemeClasses(company.themeKey)}`}

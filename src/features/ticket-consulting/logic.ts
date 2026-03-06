@@ -18,7 +18,7 @@ export const getCompanies = (): Company[] => {
         },
         {
             id: 2,
-            name: '이동 티켓 2',
+            name: '이동 티켓 2 - 김실장',
             description: '신용카드 상품권 매입, 24시간 자동화 시스템',
             iconUrl: '/move-ticket2.png',
             themeKey: 'purple'
@@ -32,7 +32,7 @@ export const getCompanies = (): Company[] => {
         },
         {
             id: 4,
-            name: '이동 티켓 1',
+            name: '이동 티켓 1 - 이대표',
             description: '5년 연속 무사고 인증, VIP 전담 상담사 배정',
             iconUrl: '/move-ticket1.png',
             themeKey: 'blue'
