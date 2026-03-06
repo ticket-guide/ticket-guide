@@ -47,6 +47,9 @@ export const CompanyListSection = () => {
                         {/* 상단: 업체명 */}
                         <div className="flex flex-col mb-2">
                             <h3 className="text-xl sm:text-2xl font-bold text-white mb-1 flex items-center gap-2 leading-tight">
+                                {company.iconUrl && (
+                                    <img src={company.iconUrl} alt="Crown Icon" className="w-6 h-6 sm:w-8 sm:h-8 object-contain shrink-0 drop-shadow-md" />
+                                )}
                                 {company.name}
                                 <BadgeCheck className="text-blue-400 w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
                             </h3>

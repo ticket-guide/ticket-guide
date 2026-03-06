@@ -10,50 +10,44 @@ export const getConsultingOptions = (): ConsultingOption[] => [
 export const getCompanies = (): Company[] => [
     {
         id: 'company-a',
-        name: '티켓가이드 공식 파트너',
+        name: '킹 티켓',
         description: '업계 최저 수수료 보장 및 5분 내 입금',
+        iconUrl: '/king-ticket.png',
         themeKey: 'blue'
     },
     {
         id: 'company-b',
-        name: '신속티켓 24',
-        description: '핀번호만 있으면 1분 컷 초고속 거래',
-        themeKey: 'purple'
+        name: '에이치 티켓',
+        description: '지류 상품권 대량 매입 전문, 방문 출장 가능',
+        iconUrl: '/h-ticket.png',
+        themeKey: 'emerald'
     },
     {
         id: 'company-c',
-        name: '프리미엄 지류 티켓',
-        description: '지류 상품권 대량 매입 전문, 방문 출장 가능',
-        themeKey: 'emerald'
-    },
-    {
-        id: 'company-d',
-        name: '플레이 포인트 익스체인지',
+        name: '제이 티켓',
         description: '구글, 넥슨, 문화상품권 모바일 특화 거래소',
+        iconUrl: '/j-ticket.png',
         themeKey: 'rose'
     },
     {
-        id: 'company-e',
-        name: '티켓 매입 365',
-        description: '도서문화, 해피머니 실시간 최고가 매입',
-        themeKey: 'amber'
-    },
-    {
-        id: 'company-f',
-        name: '안전 거래소 VIP',
+        id: 'company-d',
+        name: '이동 티켓 1',
         description: '5년 연속 무사고 인증, VIP 전담 상담사 배정',
+        iconUrl: '/move-ticket1.png',
         themeKey: 'blue'
     },
     {
-        id: 'company-g',
-        name: '페이백 프로',
-        description: '소액 티켓 현금화 및 상품권 대량 거래 전문',
-        themeKey: 'emerald'
+        id: 'company-e',
+        name: '이동 티켓 2',
+        description: '신용카드 상품권 매입, 24시간 자동화 시스템',
+        iconUrl: '/move-ticket2.png',
+        themeKey: 'purple'
     },
     {
-        id: 'company-h',
-        name: '스마트 티켓 머니',
-        description: '신용카드 상품권 매입, 24시간 자동화 시스템',
+        id: 'company-f',
+        name: '일등 티켓',
+        description: '소액 티켓 현금화 및 상품권 대량 거래 전문',
+        iconUrl: '/first-ticket.png',
         themeKey: 'purple'
     },
 ];
