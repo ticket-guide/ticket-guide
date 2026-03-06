@@ -36,8 +36,8 @@ export const CompanyListSection = () => {
                 </button>
             </div>
 
-            {/* 업체 리스트 그리드 (모바일 1열, 태블릿 2열, 큰 화면 최대 4열) - 아코디언 애니메이션 추가 */}
-            <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 w-full max-w-[100rem] mx-auto transition-all duration-500 overflow-hidden ${isExpanded ? 'opacity-100 max-h-[8000px] mt-6' : 'opacity-0 max-h-0'}`}>
+            {/* 업체 리스트 그리드 (항상 최대 3열 고정) - 아코디언 애니메이션 추가 */}
+            <div className={`grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 w-full max-w-[100rem] mx-auto transition-all duration-500 overflow-hidden ${isExpanded ? 'opacity-100 max-h-[8000px] mt-6' : 'opacity-0 max-h-0'}`}>
                 {companies.map((company, index) => (
                     <div
                         key={company.id}
