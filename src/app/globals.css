@@ -17,6 +17,15 @@
     }
 }
 
+html,
+body {
+    min-width: 1280px;
+    /* PC 데스크탑 해상도 폭 강제 고정 */
+    overflow-x: auto;
+    /* 필요한 경우 자체 스크롤 */
+    width: 100%;
+}
+
 body {
     color: var(--foreground);
     background: linear-gradient(-45deg, #18181b, #27272a, #3f3f46, #18181b);

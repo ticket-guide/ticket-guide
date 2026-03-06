@@ -1,9 +1,13 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import DesktopScaleWrapper from './DesktopScaleWrapper';
 
 export const viewport: Viewport = {
     themeColor: '#18181b', // zinc-900 
-    width: 1280,           // 데스크탑 PC 너비에 맞춰 줌-아웃되도록 고정
+    width: 1280,
+    initialScale: 0.1,    // 브라우저 렌더링 엔진이 강제로 넓은 영역을 한 화면에 줌아웃하도록 최소 배율로 던짐
+    maximumScale: 10,     // 유저가 임의로 확대 축소하는 건 가능하게
+    userScalable: true,
 };
 
 export const metadata: Metadata = {
@@ -22,9 +26,11 @@ export default function RootLayout({
     return (
         <html lang="ko">
             <body>
-                <main className="min-h-screen">
-                    {children}
-                </main>
+                <DesktopScaleWrapper>
+                    <main className="min-h-screen min-w-[1280px] w-[1280px] mx-auto overflow-hidden">
+                        {children}
+                    </main>
+                </DesktopScaleWrapper>
             </body>
         </html>
     );
