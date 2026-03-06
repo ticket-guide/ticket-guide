@@ -40,7 +40,6 @@ export const GuideContentSection = () => {
                             <a href="#what-is-reservation" className="px-4 py-2 bg-zinc-800 text-gray-200 font-bold rounded-full shadow-sm hover:shadow-md transition-all text-xs sm:text-sm border border-zinc-700">예약판매란?</a>
                             <a href="#warnings" className="px-4 py-2 bg-zinc-800 text-gray-200 font-bold rounded-full shadow-sm hover:shadow-md transition-all text-xs sm:text-sm border border-zinc-700">주의사항 및 리스크</a>
                             <a href="#legal-penalty" className="px-4 py-2 bg-zinc-800 text-gray-200 font-bold rounded-full shadow-sm hover:shadow-md transition-all text-xs sm:text-sm border border-zinc-700">법적 처벌 안내</a>
-                            <a href="#company-list-section" className="px-5 py-2 bg-primary text-white font-bold rounded-full shadow-md hover:shadow-lg transition-all text-xs sm:text-sm">추천 업체 바로가기 👉</a>
                         </div>
                     </div>
                 </div>

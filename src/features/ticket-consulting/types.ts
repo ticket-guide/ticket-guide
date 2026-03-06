@@ -11,7 +11,7 @@ export interface ConsultingOption {
 export interface Company {
     id: number;             // 모달 분기용 고유 숫자 ID
     name: string;           // 업체명
-    description: string;    // 한줄 설명
+    badges: string[];       // 카드 내에 표시될 뱃지 텍스트 배열 (예: ['정식사업자', '빠른 상담'])
     iconUrl?: string;       // 업체 타이틀 옆 아이콘 (왕관/엠블럼 등)
     themeKey?: 'blue' | 'purple' | 'emerald' | 'rose' | 'amber'; // 카드 색상 테마
     contactLink?: string;   // 클릭 시 바로 이동할 외부 메신저 링크 (예: 라인 딥링크)

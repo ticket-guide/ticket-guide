@@ -71,10 +71,15 @@ export const CompanyListSection = () => {
                             </h3>
                         </div>
 
-                        {/* 중단: 설명 텍스트 (flex-grow를 통해 높이를 모두 채워 하단 영역을 밀어냄) */}
-                        <p className="text-zinc-400 mb-4 text-sm sm:text-base leading-relaxed flex-grow">
-                            {company.description}
-                        </p>
+                        {/* 중단: 뱃지 리스트 (flex-grow를 통해 높이를 모두 채워 하단 영역을 밀어냄) */}
+                        <div className="flex flex-wrap gap-2 mb-4 flex-grow content-start pt-2">
+                            {company.badges?.map((badge, bIdx) => (
+                                <span key={bIdx} className="px-2.5 py-1 text-xs sm:text-sm font-bold tracking-tight rounded-md bg-zinc-700/50 text-emerald-400 border border-emerald-500/20 shadow-sm flex items-center gap-1.5 backdrop-blur-sm">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                    {badge}
+                                </span>
+                            ))}
+                        </div>
 
                         {/* 하단: 상담 버튼 (항상 박스 아래 쪽에 위치) */}
                         <div className="mt-auto">
