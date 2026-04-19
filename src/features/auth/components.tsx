@@ -27,10 +27,13 @@ export const AuthModal = () => {
             }
         });
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_OUT') setUser(null);
+            if (event === 'SIGNED_OUT') { setUser(null); return; }
             if (session?.user) {
                 const profile = await fetchProfile(session.user.id);
-                if (profile) setUser(profile);
+                if (profile) {
+                    setUser(profile);
+                    closeModal();
+                }
             }
         });
         return () => subscription.unsubscribe();
