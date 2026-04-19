@@ -106,6 +106,42 @@ CREATE POLICY "msg_insert" ON chat_messages FOR INSERT WITH CHECK (
 
 -- Realtime 활성화
 ALTER PUBLICATION supabase_realtime ADD TABLE chat_messages;
+
+-- companies 테이블 (제휴업체)
+CREATE TABLE companies (
+  id           serial PRIMARY KEY,
+  owner_id     uuid references profiles(id) ON DELETE CASCADE,
+  name         text NOT NULL,
+  badges       text[] DEFAULT '{}',
+  icon_url     text,
+  contact_link text,
+  is_active    boolean DEFAULT true,
+  created_at   timestamp DEFAULT now(),
+  updated_at   timestamp DEFAULT now()
+);
+ALTER TABLE companies ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "anyone_read_active" ON companies FOR SELECT USING (is_active = true OR auth.uid() = owner_id);
+CREATE POLICY "owner_manage" ON companies FOR ALL USING (auth.uid() = owner_id);
+CREATE POLICY "admin_all" ON companies FOR ALL USING (
+  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = true)
+);
+
+-- buy_posts 테이블 (삽니다 게시판)
+CREATE TABLE buy_posts (
+  id                  serial PRIMARY KEY,
+  author_id           uuid references profiles(id) ON DELETE CASCADE,
+  ticket_type         text NOT NULL,
+  title               text NOT NULL,
+  content             text,
+  buy_price           integer,
+  is_price_negotiable boolean DEFAULT false,
+  tags                text[] DEFAULT '{}',
+  status              text DEFAULT '구매중' CHECK (status IN ('구매중', '구매완료')),
+  created_at          timestamp DEFAULT now()
+);
+ALTER TABLE buy_posts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "anyone_read_buy_posts" ON buy_posts FOR SELECT USING (true);
+CREATE POLICY "author_manage_buy_posts" ON buy_posts FOR ALL USING (auth.uid() = author_id);
 ```
 
 ## 주요 파일 구조

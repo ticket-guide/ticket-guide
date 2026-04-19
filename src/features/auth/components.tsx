@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { X, Mail, Lock, User, LogIn, UserPlus, Eye, EyeOff, AlertCircle, Building2, Shield } from 'lucide-react';
 import { CompanyManageModal, AdminCompanyPanel } from '@/features/ticket-consulting/components';
 import { useAuthStore } from './store';
-import { signIn, signUp, signOut, fetchProfile } from './logic';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { signIn, signUp, signOut } from './logic';
+import { isSupabaseConfigured } from '@/lib/supabase';
 
 /* ───────────────────────────────────────────────
    AuthModal — 로그인 / 회원가입 모달
@@ -16,28 +16,6 @@ export const AuthModal = () => {
 
     // 외부에서 mode 변경 시 동기화
     useEffect(() => { setMode(modalMode); }, [modalMode]);
-
-    // Supabase 세션 복원
-    useEffect(() => {
-        if (!isSupabaseConfigured) return;
-        supabase.auth.getSession().then(async ({ data }) => {
-            if (data.session?.user) {
-                const profile = await fetchProfile(data.session.user.id);
-                if (profile) setUser(profile);
-            }
-        });
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_OUT') { setUser(null); return; }
-            if (session?.user) {
-                const profile = await fetchProfile(session.user.id);
-                if (profile) {
-                    setUser(profile);
-                    closeModal();
-                }
-            }
-        });
-        return () => subscription.unsubscribe();
-    }, []);
 
     if (!isModalOpen) return null;
 

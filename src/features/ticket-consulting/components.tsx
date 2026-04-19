@@ -805,9 +805,11 @@ export const ConsultingQrModal = () => {
 
 /* ── AdminCompanyPanel ── */
 export const AdminCompanyPanel = ({ onClose }: { onClose: () => void }) => {
+    const { user } = useAuthStore();
     const [companies, setCompanies] = useState<CompanyDB[]>([]);
     const [loading, setLoading] = useState(true);
     const [editTarget, setEditTarget] = useState<CompanyDB | null>(null);
+    const [showCreate, setShowCreate] = useState(false);
 
     const load = () => {
         setLoading(true);
@@ -831,6 +833,16 @@ export const AdminCompanyPanel = ({ onClose }: { onClose: () => void }) => {
         );
     }
 
+    if (showCreate && user) {
+        return (
+            <AdminCreateModal
+                adminId={user.id}
+                onClose={() => setShowCreate(false)}
+                onSaved={() => { setShowCreate(false); load(); }}
+            />
+        );
+    }
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
@@ -841,6 +853,7 @@ export const AdminCompanyPanel = ({ onClose }: { onClose: () => void }) => {
                         <h2 className="text-base font-bold text-foreground">관리자 — 업체 관리</h2>
                     </div>
                     <div className="flex items-center gap-2">
+                        <button onClick={() => setShowCreate(true)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg bg-primary text-white font-semibold hover:bg-primary-dark transition-colors"><Plus className="w-3.5 h-3.5" />새 업체 추가</button>
                         <button onClick={load} className="px-3 py-1.5 text-xs rounded-lg bg-background-secondary border border-border text-foreground-muted hover:text-foreground transition-colors">새로고침</button>
                         <button onClick={onClose} className="text-foreground-muted hover:text-foreground bg-background-secondary rounded-full p-1.5 transition-colors"><X size={18} /></button>
                     </div>
@@ -991,6 +1004,98 @@ const AdminEditModal = ({ company, onClose, onSaved }: AdminEditModalProps) => {
                     {error && <p className="text-xs text-red-500 font-medium">{error}</p>}
                     <button type="submit" disabled={submitting} className="w-full py-3 rounded-xl bg-primary hover:bg-primary-dark text-white font-bold text-sm transition-colors shadow-sm flex items-center justify-center gap-2 disabled:opacity-60">
                         {submitting ? <><Loader2 className="w-4 h-4 animate-spin" />저장 중...</> : '저장하기'}
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+/* ── AdminCreateModal ── */
+const AdminCreateModal = ({ adminId, onClose, onSaved }: { adminId: string; onClose: () => void; onSaved: () => void }) => {
+    const [form, setForm] = useState<NewCompany>({ name: '', badges: [], icon_url: null, contact_link: null });
+    const [badgeInput, setBadgeInput] = useState('');
+    const [uploading, setUploading] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState('');
+    const fileRef = useRef<HTMLInputElement>(null);
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setUploading(true);
+        const url = await uploadCompanyImage(file, adminId);
+        setUploading(false);
+        if (url) setForm(f => ({ ...f, icon_url: url }));
+        else setError('이미지 업로드에 실패했습니다.');
+    };
+
+    const addBadge = () => {
+        const b = badgeInput.trim();
+        if (!b || form.badges.includes(b) || form.badges.length >= 4) return;
+        setForm(f => ({ ...f, badges: [...f.badges, b] }));
+        setBadgeInput('');
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!form.name.trim()) { setError('업체명을 입력해주세요.'); return; }
+        setSubmitting(true); setError('');
+        const { error: err } = await upsertCompany(adminId, form);
+        setSubmitting(false);
+        if (err) { setError('저장에 실패했습니다.'); return; }
+        onSaved();
+    };
+
+    return (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+            <div className="relative bg-card rounded-3xl w-full max-w-lg shadow-card-lg animate-slide-up z-10 border border-border overflow-hidden">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+                    <h2 className="text-base font-bold text-foreground">새 업체 추가</h2>
+                    <button onClick={onClose} className="text-foreground-muted hover:text-foreground bg-background-secondary rounded-full p-1.5 transition-colors"><X size={18} /></button>
+                </div>
+                <form onSubmit={handleSubmit} className="px-6 py-5 flex flex-col gap-4 max-h-[70vh] overflow-y-auto">
+                    <div>
+                        <label className="block text-xs font-semibold text-foreground-muted mb-2">업체 이미지</label>
+                        <div className="flex items-center gap-4">
+                            <div className="w-20 h-20 rounded-xl border-2 border-dashed border-border bg-background-secondary flex items-center justify-center overflow-hidden shrink-0">
+                                {form.icon_url ? <img src={form.icon_url} alt="preview" className="w-full h-full object-contain" /> : <ImagePlus className="w-7 h-7 text-foreground-muted opacity-40" />}
+                            </div>
+                            <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading} className="px-4 py-2 rounded-lg bg-background-secondary border border-border text-xs font-semibold text-foreground hover:border-primary/40 transition-colors flex items-center gap-2 disabled:opacity-60">
+                                <ImagePlus className="w-4 h-4" />{uploading ? '업로드 중...' : '이미지 선택'}
+                            </button>
+                            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold text-foreground-muted mb-1.5">업체명 *</label>
+                        <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} maxLength={30} className="w-full px-3 py-2.5 rounded-xl border border-border bg-background-secondary text-sm text-foreground focus:outline-none focus:border-primary transition-colors" />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold text-foreground-muted mb-1.5">뱃지 (최대 4개)</label>
+                        <div className="flex gap-2 mb-2 flex-wrap">
+                            {form.badges.map(b => (
+                                <span key={b} className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-primary-light text-primary border border-primary/20">
+                                    <Star className="w-3 h-3" />{b}
+                                    <button type="button" onClick={() => setForm(f => ({ ...f, badges: f.badges.filter(x => x !== b) }))} className="ml-0.5 hover:text-red-500 transition-colors"><X className="w-3 h-3" /></button>
+                                </span>
+                            ))}
+                        </div>
+                        {form.badges.length < 4 && (
+                            <div className="flex gap-2">
+                                <input type="text" value={badgeInput} onChange={e => setBadgeInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addBadge())} placeholder="뱃지 입력" maxLength={20} className="flex-1 px-3 py-2 rounded-xl border border-border bg-background-secondary text-sm text-foreground focus:outline-none focus:border-primary transition-colors" />
+                                <button type="button" onClick={addBadge} className="px-3 py-2 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary-dark transition-colors"><Plus className="w-4 h-4" /></button>
+                            </div>
+                        )}
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold text-foreground-muted mb-1.5 flex items-center gap-1"><Link className="w-3.5 h-3.5" />상담 링크</label>
+                        <input type="url" value={form.contact_link ?? ''} onChange={e => setForm(f => ({ ...f, contact_link: e.target.value || null }))} placeholder="https://line.me/..." className="w-full px-3 py-2.5 rounded-xl border border-border bg-background-secondary text-sm text-foreground focus:outline-none focus:border-primary transition-colors" />
+                    </div>
+                    {error && <p className="text-xs text-red-500 font-medium">{error}</p>}
+                    <button type="submit" disabled={submitting} className="w-full py-3 rounded-xl bg-primary hover:bg-primary-dark text-white font-bold text-sm transition-colors shadow-sm flex items-center justify-center gap-2 disabled:opacity-60">
+                        {submitting ? <><Loader2 className="w-4 h-4 animate-spin" />추가 중...</> : '업체 추가'}
                     </button>
                 </form>
             </div>

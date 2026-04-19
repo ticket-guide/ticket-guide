@@ -4,6 +4,7 @@ import DesktopScaleWrapper from './DesktopScaleWrapper';
 import { Header } from '@/features/header/components';
 import { Footer } from '@/features/footer/components';
 import { AuthModal } from '@/features/auth/components';
+import { AuthProvider } from '@/features/auth/provider';
 
 export const viewport: Viewport = {
     themeColor: '#2563EB',
@@ -29,16 +30,18 @@ export default function RootLayout({
     return (
         <html lang="ko">
             <body>
-                <DesktopScaleWrapper>
-                    <div className="flex flex-col min-h-screen">
-                        <Header />
-                        <main className="flex-1 w-full max-w-[1280px] mx-auto px-4 sm:px-6 py-8">
-                            {children}
-                        </main>
-                        <Footer />
-                        <AuthModal />
-                    </div>
-                </DesktopScaleWrapper>
+                <AuthProvider>
+                    <DesktopScaleWrapper>
+                        <div className="flex flex-col min-h-screen">
+                            <Header />
+                            <main className="flex-1 w-full max-w-[1280px] mx-auto px-4 sm:px-6 py-8">
+                                {children}
+                            </main>
+                            <Footer />
+                            <AuthModal />
+                        </div>
+                    </DesktopScaleWrapper>
+                </AuthProvider>
             </body>
         </html>
     );
