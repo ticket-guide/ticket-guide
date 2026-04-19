@@ -6,7 +6,6 @@ import { CompanyManageModal, AdminCompanyPanel } from '@/features/ticket-consult
 import { useAuthStore } from './store';
 import { signIn, signUp, signOut, fetchProfile } from './logic';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import { UserType } from './types';
 
 /* ───────────────────────────────────────────────
    AuthModal — 로그인 / 회원가입 모달
@@ -140,20 +139,21 @@ const SignupForm = ({ onSuccess }: { onSuccess: () => void }) => {
     const [password, setPassword] = useState('');
     const [confirmPw, setConfirmPw] = useState('');
     const [nickname, setNickname] = useState('');
-    const [userType] = useState<UserType>('buyer'); // 현재 buyer만 활성화
     const [showPw, setShowPw] = useState(false);
     const [error, setError] = useState('');
+
+    const pwMismatch = confirmPw.length > 0 && password !== confirmPw;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        if (password !== confirmPw) { setError('비밀번호가 일치하지 않습니다.'); return; }
-        if (password.length < 6) { setError('비밀번호는 6자 이상이어야 합니다.'); return; }
         if (!nickname.trim()) { setError('닉네임을 입력해주세요.'); return; }
+        if (password.length < 6) { setError('비밀번호는 6자 이상이어야 합니다.'); return; }
+        if (password !== confirmPw) { setError('비밀번호가 일치하지 않습니다.'); return; }
 
         setLoading(true);
         try {
-            const user = await signUp(email, password, nickname.trim(), userType);
+            const user = await signUp(email, password, nickname.trim(), 'buyer');
             setUser(user);
             onSuccess();
         } catch (err: any) {
@@ -164,7 +164,7 @@ const SignupForm = ({ onSuccess }: { onSuccess: () => void }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4" autoComplete="off">
             <div className="text-center mb-2">
                 <div className="w-12 h-12 rounded-2xl bg-primary-light flex items-center justify-center mx-auto mb-3">
                     <UserPlus className="w-6 h-6 text-primary" />
@@ -179,25 +179,23 @@ const SignupForm = ({ onSuccess }: { onSuccess: () => void }) => {
                 </div>
             )}
 
-            <InputField icon={<Mail className="w-4 h-4" />} type="email" placeholder="이메일" value={email} onChange={setEmail} required />
-            <InputField icon={<User className="w-4 h-4" />} type="text" placeholder="닉네임" value={nickname} onChange={setNickname} required />
-            <InputField icon={<Lock className="w-4 h-4" />} type={showPw ? 'text' : 'password'} placeholder="비밀번호 (6자 이상)" value={password} onChange={setPassword}
+            <InputField icon={<Mail className="w-4 h-4" />} type="email" placeholder="이메일" value={email} onChange={setEmail} autoComplete="email" required />
+            <InputField icon={<User className="w-4 h-4" />} type="text" placeholder="닉네임" value={nickname} onChange={setNickname} autoComplete="off" required />
+            <InputField icon={<Lock className="w-4 h-4" />} type={showPw ? 'text' : 'password'} placeholder="비밀번호 (6자 이상)" value={password} onChange={setPassword} autoComplete="new-password"
                 suffix={<button type="button" onClick={() => setShowPw(!showPw)} className="text-foreground-muted hover:text-foreground">{showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>} required />
-            <InputField icon={<Lock className="w-4 h-4" />} type={showPw ? 'text' : 'password'} placeholder="비밀번호 확인" value={confirmPw} onChange={setConfirmPw} required />
-
-            {/* 유저 타입 — 현재 buyer만 활성화 */}
-            <div className="flex gap-2">
-                <div className="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 border-primary bg-primary-light cursor-default">
-                    <span className="text-sm font-bold text-primary">구매자</span>
-                    <span className="ml-auto text-xs text-primary font-medium">선택됨</span>
-                </div>
-                <div className="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl border border-border bg-background-secondary cursor-not-allowed opacity-50">
-                    <span className="text-sm font-medium text-foreground-muted">판매자</span>
-                    <span className="ml-auto text-xs text-foreground-muted">준비중</span>
-                </div>
+            <div>
+                <InputField icon={<Lock className="w-4 h-4" />} type={showPw ? 'text' : 'password'} placeholder="비밀번호 확인" value={confirmPw} onChange={setConfirmPw} autoComplete="new-password" required />
+                {pwMismatch && (
+                    <p className="text-xs text-red-500 mt-1.5 flex items-center gap-1">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" /> 비밀번호가 일치하지 않습니다.
+                    </p>
+                )}
+                {!pwMismatch && confirmPw.length > 0 && (
+                    <p className="text-xs text-emerald-600 mt-1.5">비밀번호가 일치합니다.</p>
+                )}
             </div>
 
-            <button type="submit" disabled={isLoading}
+            <button type="submit" disabled={isLoading || pwMismatch}
                 className="w-full py-3 rounded-xl bg-primary hover:bg-primary-dark text-white font-bold text-sm shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed mt-1">
                 {isLoading ? '가입 중...' : '회원가입'}
             </button>
@@ -222,9 +220,10 @@ interface InputFieldProps {
     onChange: (v: string) => void;
     suffix?: React.ReactNode;
     required?: boolean;
+    autoComplete?: string;
 }
 
-const InputField = ({ icon, type, placeholder, value, onChange, suffix, required }: InputFieldProps) => (
+const InputField = ({ icon, type, placeholder, value, onChange, suffix, required, autoComplete }: InputFieldProps) => (
     <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-border bg-background focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
         <span className="text-foreground-muted shrink-0">{icon}</span>
         <input
@@ -233,6 +232,7 @@ const InputField = ({ icon, type, placeholder, value, onChange, suffix, required
             value={value}
             onChange={(e) => onChange(e.target.value)}
             required={required}
+            autoComplete={autoComplete}
             className="flex-1 bg-transparent text-sm text-foreground placeholder:text-foreground-muted outline-none"
         />
         {suffix}
