@@ -1,12 +1,15 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import DesktopScaleWrapper from './DesktopScaleWrapper';
+import { Header } from '@/features/header/components';
+import { Footer } from '@/features/footer/components';
+import { AuthModal } from '@/features/auth/components';
 
 export const viewport: Viewport = {
-    themeColor: '#18181b', // zinc-900 
-    width: 1280,
-    initialScale: 0.1,    // 브라우저 렌더링 엔진이 강제로 넓은 영역을 한 화면에 줌아웃하도록 최소 배율로 던짐
-    maximumScale: 10,     // 유저가 임의로 확대 축소하는 건 가능하게
+    themeColor: '#2563EB',
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
     userScalable: true,
 };
 
@@ -27,9 +30,14 @@ export default function RootLayout({
         <html lang="ko">
             <body>
                 <DesktopScaleWrapper>
-                    <main className="min-h-screen min-w-[1280px] w-[1280px] mx-auto overflow-hidden">
-                        {children}
-                    </main>
+                    <div className="flex flex-col min-h-screen">
+                        <Header />
+                        <main className="flex-1 w-full max-w-[1280px] mx-auto px-4 sm:px-6 py-8">
+                            {children}
+                        </main>
+                        <Footer />
+                        <AuthModal />
+                    </div>
                 </DesktopScaleWrapper>
             </body>
         </html>

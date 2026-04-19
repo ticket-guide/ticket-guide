@@ -5,9 +5,12 @@
 - TypeScript
 - Tailwind CSS
 
-## 배포
-- npm run deploy 활용
-- gh-pages 브랜치에 푸시
+## 배포 (AWS Ubuntu 환경)
+- 로컬 개발 후 `main` 브랜치에 코드를 `git push` 하여 백업 및 전송
+- AWS 서버에서 `git pull` 진행 후 아래 과정 순차 실행
+  1. `npm install` (신규 패키지 추가 시)
+  2. `npm run build` (정적 HTML 파일 `out/` 결과물 신규 생성)
+  3. `pm2 restart ticket-guide` (최신 빌드 버전으로 서버 갱신)
 
 ## 코드 관리
 - main 브랜치로 코드 관리
@@ -15,13 +18,9 @@
 ## 아키텍처
 - 클린 아키텍처
 
-## 참고 사이트
-- 메인 : https://xn--zf0b37utkft8e3tar93ddlc.com/
-
-
 ## 개발 주요 내용
-- 참고 사이트는 문구 등을 참고할 것이며, 디자인은 참고하지 말 것
-- 디자인은 최신 ui / ux를 참고하여 제작할 것
+- 기존 참고 사이트 기획 추출 및 반영 완료
+- 디자인은 최신 UI / UX를 참고하여 트렌디하게 퀄리티를 유지할 것
 - pc / mobile 반응형으로 만들 것
 - 전체적으로 캡슐화를 잘 해놓아 추후 변경되어도 수정이 용이하게 만들 것
 - 최신 클린 아키텍처를 준수할 것

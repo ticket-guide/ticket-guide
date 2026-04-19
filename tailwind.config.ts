@@ -11,10 +11,15 @@ export default {
         extend: {
             colors: {
                 background: "var(--background)",
+                "background-secondary": "var(--background-secondary)",
                 foreground: "var(--foreground)",
+                "foreground-muted": "var(--foreground-muted)",
+                card: "var(--card-bg)",
+                border: "var(--border)",
                 primary: {
                     DEFAULT: "var(--primary)",
                     dark: "var(--primary-dark)",
+                    light: "var(--primary-light)",
                 },
             },
             animation: {
@@ -37,9 +42,14 @@ export default {
                     '50%': { transform: 'translateY(-8px)' },
                 },
                 pulseGlow: {
-                    '0%, 100%': { opacity: '1', boxShadow: '0 0 15px rgba(255, 94, 142, 0.4)' },
-                    '50%': { opacity: '.8', boxShadow: '0 0 25px rgba(255, 94, 142, 0.8)' },
-                }
+                    '0%, 100%': { opacity: '1' },
+                    '50%': { opacity: '.85' },
+                },
+            },
+            boxShadow: {
+                'card': 'var(--shadow-sm)',
+                'card-md': 'var(--shadow-md)',
+                'card-lg': 'var(--shadow-lg)',
             },
         },
     },
