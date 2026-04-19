@@ -96,6 +96,31 @@
 
 ---
 
+## Phase 5 — 운영/개발 DB 분리 (예정)
+
+- [ ] **Supabase 프로젝트 분리**
+  - 현재: 단일 프로젝트 `jegthxwoexzmczzqlorc` (개발/운영 혼용)
+  - 개발용 프로젝트: 로컬(`localhost:3000`)에서만 사용
+  - 운영용 프로젝트: Vercel 배포 도메인에서 사용 (추후 커스텀 도메인 교체 예정)
+
+- [ ] **환경변수 분리**
+  - `.env.local` → 개발 Supabase URL/ANON_KEY 사용
+  - Vercel 환경변수 → 운영 Supabase URL/ANON_KEY로 교체
+  - `.env.example` 파일 생성 (키 없이 구조만)
+
+- [ ] **운영 Supabase 프로젝트 세팅**
+  - 새 Supabase 프로젝트 생성 (운영용)
+  - `CLAUDE.md` 내 DB 스키마 SQL 전체 실행
+  - Site URL → 운영 도메인으로 설정
+  - Redirect URLs → 운영 도메인 추가
+  - 운영 업체 데이터 등록 (admin 계정 포함)
+
+- [ ] **도메인 변경 대응**
+  - 커스텀 도메인 연결 후 Supabase Site URL / Redirect URLs 업데이트
+  - Vercel 환경변수 재확인
+
+---
+
 ## 나머지 작업
 
 - [x] **글쓰기 기능** — 팝니다 탭 글쓰기 버튼 + `SellPostFormModal` + `sell_posts` DB 연동
