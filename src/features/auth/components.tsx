@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Mail, Lock, User, LogIn, UserPlus, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { X, Mail, Lock, User, LogIn, UserPlus, Eye, EyeOff, AlertCircle, Building2 } from 'lucide-react';
+import { CompanyManageModal } from '@/features/ticket-consulting/components';
 import { useAuthStore } from './store';
 import { signIn, signUp, signOut, fetchProfile } from './logic';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
@@ -244,6 +245,7 @@ const InputField = ({ icon, type, placeholder, value, onChange, suffix, required
 export const UserAvatarButton = () => {
     const { user, logout } = useAuthStore();
     const [open, setOpen] = useState(false);
+    const [showManage, setShowManage] = useState(false);
 
     if (!user) return null;
 
@@ -254,26 +256,40 @@ export const UserAvatarButton = () => {
     };
 
     return (
-        <div className="relative">
-            <button onClick={() => setOpen(!open)}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border hover:border-primary/40 bg-card transition-colors text-sm font-semibold text-foreground">
-                <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">
-                    {user.nickname.charAt(0).toUpperCase()}
-                </div>
-                {user.nickname}
-            </button>
-            {open && (
-                <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-xl shadow-card-md py-1 w-40 z-50">
-                    <div className="px-3 py-2 border-b border-border">
-                        <p className="text-xs font-semibold text-foreground">{user.nickname}</p>
-                        <p className="text-xs text-foreground-muted truncate">{user.email}</p>
+        <>
+            <div className="relative">
+                <button onClick={() => setOpen(!open)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border hover:border-primary/40 bg-card transition-colors text-sm font-semibold text-foreground">
+                    <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">
+                        {user.nickname.charAt(0).toUpperCase()}
                     </div>
-                    <button onClick={handleLogout}
-                        className="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors">
-                        로그아웃
-                    </button>
-                </div>
+                    {user.nickname}
+                </button>
+                {open && (
+                    <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-xl shadow-card-md py-1 w-44 z-50">
+                        <div className="px-3 py-2 border-b border-border">
+                            <p className="text-xs font-semibold text-foreground">{user.nickname}</p>
+                            <p className="text-xs text-foreground-muted truncate">{user.email}</p>
+                        </div>
+                        {user.userType === 'seller' && (
+                            <button
+                                onClick={() => { setShowManage(true); setOpen(false); }}
+                                className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-background-secondary transition-colors flex items-center gap-2"
+                            >
+                                <Building2 className="w-4 h-4 text-primary" />
+                                내 업체 관리
+                            </button>
+                        )}
+                        <button onClick={handleLogout}
+                            className="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors">
+                            로그아웃
+                        </button>
+                    </div>
+                )}
+            </div>
+            {showManage && (
+                <CompanyManageModal userId={user.id} onClose={() => setShowManage(false)} />
             )}
-        </div>
+        </>
     );
 };

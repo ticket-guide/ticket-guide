@@ -1,4 +1,4 @@
-import { ConsultingType, ConsultingOption, Company, SellPost, SellPostDB, NewSellPost } from './types';
+import { ConsultingType, ConsultingOption, Company, SellPost, SellPostDB, NewSellPost, CompanyDB, NewCompany, BuyPost, BuyPostDB, NewBuyPost } from './types';
 import { supabase } from '@/lib/supabase';
 
 // 기존 호환용
@@ -197,11 +197,111 @@ export const getModalTitleForType = (typeId: string | number): string => {
     if (company) {
         return `${company.name} 상담 연결`;
     }
-
     switch (typeId as ConsultingType) {
         case 'COUNSEL': return '1:1 맞춤 상담 연결';
         case 'INQUIRY': return '실시간 상담 문의';
         case 'SELL': return '신속한 판매 상담 연결';
         default: return '상담 안내';
     }
+};
+
+/* ── Companies DB ── */
+export const fetchCompaniesFromDB = async (): Promise<Company[]> => {
+    const { data, error } = await supabase
+        .from('companies')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: true });
+    if (error || !data || data.length === 0) return getCompanies();
+    return (data as CompanyDB[]).map((c) => ({
+        id: c.id,
+        name: c.name,
+        badges: c.badges ?? [],
+        iconUrl: c.icon_url ?? undefined,
+        contactLink: c.contact_link ?? undefined,
+        listingType: 'buy' as const,
+    }));
+};
+
+export const fetchMyCompany = async (ownerId: string): Promise<CompanyDB | null> => {
+    const { data } = await supabase
+        .from('companies')
+        .select('*')
+        .eq('owner_id', ownerId)
+        .maybeSingle();
+    return (data as CompanyDB) ?? null;
+};
+
+export const upsertCompany = async (ownerId: string, company: NewCompany, companyId?: number) => {
+    if (companyId) {
+        return supabase.from('companies').update({
+            name: company.name,
+            badges: company.badges,
+            icon_url: company.icon_url,
+            contact_link: company.contact_link,
+            updated_at: new Date().toISOString(),
+        }).eq('id', companyId);
+    }
+    return supabase.from('companies').insert({
+        owner_id: ownerId,
+        name: company.name,
+        badges: company.badges,
+        icon_url: company.icon_url,
+        contact_link: company.contact_link,
+    });
+};
+
+export const uploadCompanyImage = async (file: File, ownerId: string): Promise<string | null> => {
+    const ext = file.name.split('.').pop() ?? 'png';
+    const path = `${ownerId}/logo.${ext}`;
+    const { error } = await supabase.storage
+        .from('company-images')
+        .upload(path, file, { upsert: true, contentType: file.type });
+    if (error) return null;
+    const { data } = supabase.storage.from('company-images').getPublicUrl(path);
+    return `${data.publicUrl}?t=${Date.now()}`;
+};
+
+/* ── Buy Posts ── */
+const pad = (n: number) => String(n).padStart(2, '0');
+
+export const getBuyPosts = (): BuyPost[] => [
+    { id: 1, ticketType: '신세계', title: '신세계 상품권 50만원권 구매합니다', tags: ['#전국', '#모바일'], status: '구매중', buyPrice: 330000, author: '구매자1', createdAt: '2026.04.19 10:20' },
+    { id: 2, ticketType: '롯데', title: '롯데 30만원권 구매 원합니다 (가격 협의)', tags: ['#전국'], status: '구매중', buyPrice: '가격 협의', author: '구매자2', createdAt: '2026.04.19 09:15' },
+    { id: 3, ticketType: '문화상품권', title: '문화상품권 20만원권 삽니다', tags: ['#전국', '#모바일'], status: '구매완료', buyPrice: 138000, author: '구매자3', createdAt: '2026.04.18 16:44' },
+];
+
+const dbPostToBuyPost = (p: BuyPostDB): BuyPost => {
+    const d = new Date(p.created_at);
+    return {
+        id: p.id,
+        ticketType: p.ticket_type,
+        title: p.title,
+        tags: (p.tags ?? []).map((t) => `#${t}`),
+        status: p.status,
+        buyPrice: p.is_price_negotiable ? '가격 협의' : (p.buy_price ?? 0),
+        author: p.profiles?.nickname ?? '익명',
+        createdAt: `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`,
+    };
+};
+
+export const fetchBuyPostsFromDB = async (): Promise<BuyPost[]> => {
+    const { data, error } = await supabase
+        .from('buy_posts')
+        .select('*, profiles(nickname)')
+        .order('created_at', { ascending: false });
+    if (error || !data) return getBuyPosts();
+    return (data as BuyPostDB[]).map(dbPostToBuyPost);
+};
+
+export const createBuyPost = async (authorId: string, post: NewBuyPost) => {
+    return supabase.from('buy_posts').insert({
+        author_id: authorId,
+        ticket_type: post.ticket_type,
+        title: post.title,
+        content: post.content,
+        buy_price: post.buy_price,
+        is_price_negotiable: post.is_price_negotiable,
+        tags: post.tags,
+    });
 };
