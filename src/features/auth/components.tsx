@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Mail, Lock, User, LogIn, UserPlus, Eye, EyeOff, AlertCircle, Building2 } from 'lucide-react';
-import { CompanyManageModal } from '@/features/ticket-consulting/components';
+import { X, Mail, Lock, User, LogIn, UserPlus, Eye, EyeOff, AlertCircle, Building2, Shield } from 'lucide-react';
+import { CompanyManageModal, AdminCompanyPanel } from '@/features/ticket-consulting/components';
 import { useAuthStore } from './store';
 import { signIn, signUp, signOut, fetchProfile } from './logic';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
@@ -246,6 +246,7 @@ export const UserAvatarButton = () => {
     const { user, logout } = useAuthStore();
     const [open, setOpen] = useState(false);
     const [showManage, setShowManage] = useState(false);
+    const [showAdmin, setShowAdmin] = useState(false);
 
     if (!user) return null;
 
@@ -280,6 +281,15 @@ export const UserAvatarButton = () => {
                                 내 업체 관리
                             </button>
                         )}
+                        {user.isAdmin && (
+                            <button
+                                onClick={() => { setShowAdmin(true); setOpen(false); }}
+                                className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-background-secondary transition-colors flex items-center gap-2"
+                            >
+                                <Shield className="w-4 h-4 text-primary" />
+                                관리자 메뉴
+                            </button>
+                        )}
                         <button onClick={handleLogout}
                             className="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors">
                             로그아웃
@@ -289,6 +299,9 @@ export const UserAvatarButton = () => {
             </div>
             {showManage && (
                 <CompanyManageModal userId={user.id} onClose={() => setShowManage(false)} />
+            )}
+            {showAdmin && (
+                <AdminCompanyPanel onClose={() => setShowAdmin(false)} />
             )}
         </>
     );

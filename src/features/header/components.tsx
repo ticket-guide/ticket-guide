@@ -1,14 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Menu, X, Bell, LogIn, Ticket, MessageCircle } from 'lucide-react';
+import { Menu, X, Bell, LogIn, Ticket } from 'lucide-react';
 import Link from 'next/link';
 import { useAuthStore } from '@/features/auth/store';
 import { UserAvatarButton } from '@/features/auth/components';
 
 const NAV_LINKS = [
     { label: '공지사항', href: '/notices', icon: Bell },
-    { label: '채팅', href: '/chat', icon: MessageCircle },
 ];
 
 export const Header = () => {

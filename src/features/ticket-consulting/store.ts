@@ -1,14 +1,17 @@
 import { create } from 'zustand';
-import { ConsultingType, ConsultingState } from './types';
 
-interface ConsultingStore extends ConsultingState {
-    openModal: (type: string | number) => void;
+interface ConsultingStore {
+    isModalOpen: boolean;
+    selectedCompanyId: number | null;
+    selectedCompanyName: string;
+    openModal: (id: number, name: string) => void;
     closeModal: () => void;
 }
 
 export const useConsultingStore = create<ConsultingStore>((set) => ({
     isModalOpen: false,
-    selectedType: null,
-    openModal: (type) => set({ isModalOpen: true, selectedType: type }),
-    closeModal: () => set({ isModalOpen: false, selectedType: null }),
+    selectedCompanyId: null,
+    selectedCompanyName: '',
+    openModal: (id, name) => set({ isModalOpen: true, selectedCompanyId: id, selectedCompanyName: name }),
+    closeModal: () => set({ isModalOpen: false, selectedCompanyId: null, selectedCompanyName: '' }),
 }));

@@ -5,6 +5,7 @@ export interface UserProfile {
     email: string;
     nickname: string;
     userType: UserType;
+    isAdmin: boolean;
 }
 
 export type AuthMode = 'login' | 'signup';

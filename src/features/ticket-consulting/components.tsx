@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useConsultingStore } from './store';
-import { getCompanies, getModalTitleForType, getSellPosts, fetchSellPostsFromDB, createSellPost, fetchCompaniesFromDB, fetchMyCompany, upsertCompany, uploadCompanyImage, getBuyPosts, fetchBuyPostsFromDB, createBuyPost } from './logic';
+import { fetchSellPostsFromDB, createSellPost, fetchCompaniesFromDB, fetchMyCompany, upsertCompany, uploadCompanyImage, fetchBuyPostsFromDB, createBuyPost, fetchAllCompaniesAdmin, toggleCompanyActive } from './logic';
 import { ListingType, SellPost, NewSellPost, Company, BuyPost, NewBuyPost, CompanyDB, NewCompany } from './types';
-import { X, MessageCircle, BadgeCheck, Phone, ShoppingCart, Tag, CheckCircle2, PenSquare, ChevronRight, Loader2, Plus, Trash2, ImagePlus, Building2, Link, Star } from 'lucide-react';
+import { X, MessageCircle, BadgeCheck, Phone, ShoppingCart, Tag, CheckCircle2, PenSquare, ChevronRight, Loader2, Plus, Trash2, ImagePlus, Building2, Link, Star, Shield, ToggleLeft, ToggleRight, Pencil } from 'lucide-react';
 import { useAuthStore } from '@/features/auth/store';
 
 const TABS: { id: ListingType; label: string; desc: string; icon: React.ReactNode }[] = [
@@ -15,9 +15,9 @@ const TABS: { id: ListingType; label: string; desc: string; icon: React.ReactNod
 export const CompanyListSection = () => {
     const openModal = useConsultingStore((state) => state.openModal);
     const { user, openModal: openAuthModal } = useAuthStore();
-    const [companies, setCompanies] = useState<Company[]>(getCompanies());
-    const [sellPosts, setSellPosts] = useState<SellPost[]>(getSellPosts());
-    const [buyPosts, setBuyPosts] = useState<BuyPost[]>(getBuyPosts());
+    const [companies, setCompanies] = useState<Company[]>([]);
+    const [sellPosts, setSellPosts] = useState<SellPost[]>([]);
+    const [buyPosts, setBuyPosts] = useState<BuyPost[]>([]);
     const [loadingPosts, setLoadingPosts] = useState(false);
     const [loadingBuyPosts, setLoadingBuyPosts] = useState(false);
     const [showPostForm, setShowPostForm] = useState(false);
@@ -101,7 +101,7 @@ export const CompanyListSection = () => {
                                 key={company.id}
                                 company={company}
                                 index={index}
-                                onContact={company.contactLink ? undefined : () => openModal(company.id)}
+                                onContact={company.contactLink ? undefined : () => openModal(company.id, company.name)}
                             />
                         ))}
                     </div>
@@ -320,7 +320,7 @@ export const CompanyListSection = () => {
 };
 
 interface CompanyCardProps {
-    company: ReturnType<typeof getCompanies>[number];
+    company: Company;
     index: number;
     onContact?: () => void;
 }
@@ -774,8 +774,8 @@ export const CompanyManageModal = ({ userId, onClose }: CompanyManageModalProps)
 };
 
 export const ConsultingQrModal = () => {
-    const { isModalOpen, selectedType, closeModal } = useConsultingStore();
-    if (!isModalOpen || !selectedType) return null;
+    const { isModalOpen, selectedCompanyId, selectedCompanyName, closeModal } = useConsultingStore();
+    if (!isModalOpen || !selectedCompanyId) return null;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -784,7 +784,7 @@ export const ConsultingQrModal = () => {
                 <button onClick={closeModal} className="absolute right-4 top-4 text-foreground-muted hover:text-foreground bg-background-secondary rounded-full p-1.5 transition-colors">
                     <X size={18} />
                 </button>
-                <h2 className="text-xl font-extrabold mb-1 text-primary text-center">{getModalTitleForType(selectedType)}</h2>
+                <h2 className="text-xl font-extrabold mb-1 text-primary text-center">{selectedCompanyName}</h2>
                 <p className="text-xs text-foreground-muted mb-7 text-center">QR 코드를 스캔하여 24시간 실시간 상담을 시작하세요.</p>
                 <div className="w-44 h-44 bg-background-secondary rounded-2xl flex items-center justify-center overflow-hidden border-2 border-primary/20 p-2">
                     <div className="w-full h-full bg-card rounded-xl flex items-center justify-center text-foreground-muted border border-dashed border-border">
@@ -798,6 +798,201 @@ export const ConsultingQrModal = () => {
                     <p className="font-semibold text-foreground text-sm">또는 메신저 검색창 활용</p>
                     <p className="text-sm font-bold text-primary mt-1">@티켓가이드상담</p>
                 </div>
+            </div>
+        </div>
+    );
+};
+
+/* ── AdminCompanyPanel ── */
+export const AdminCompanyPanel = ({ onClose }: { onClose: () => void }) => {
+    const [companies, setCompanies] = useState<CompanyDB[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [editTarget, setEditTarget] = useState<CompanyDB | null>(null);
+
+    const load = () => {
+        setLoading(true);
+        fetchAllCompaniesAdmin().then(data => { setCompanies(data); setLoading(false); });
+    };
+
+    useEffect(() => { load(); }, []);
+
+    const handleToggle = async (c: CompanyDB) => {
+        await toggleCompanyActive(c.id, !c.is_active);
+        load();
+    };
+
+    if (editTarget) {
+        return (
+            <AdminEditModal
+                company={editTarget}
+                onClose={() => setEditTarget(null)}
+                onSaved={() => { setEditTarget(null); load(); }}
+            />
+        );
+    }
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+            <div className="relative bg-card rounded-3xl w-full max-w-2xl shadow-card-lg animate-slide-up z-10 border border-border overflow-hidden">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+                    <div className="flex items-center gap-2">
+                        <Shield className="w-5 h-5 text-primary" />
+                        <h2 className="text-base font-bold text-foreground">관리자 — 업체 관리</h2>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <button onClick={load} className="px-3 py-1.5 text-xs rounded-lg bg-background-secondary border border-border text-foreground-muted hover:text-foreground transition-colors">새로고침</button>
+                        <button onClick={onClose} className="text-foreground-muted hover:text-foreground bg-background-secondary rounded-full p-1.5 transition-colors"><X size={18} /></button>
+                    </div>
+                </div>
+
+                <div className="max-h-[70vh] overflow-y-auto">
+                    {loading ? (
+                        <div className="flex items-center justify-center py-16 gap-2 text-foreground-muted">
+                            <Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">불러오는 중...</span>
+                        </div>
+                    ) : companies.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-16 gap-2 text-foreground-muted">
+                            <Building2 className="w-8 h-8 opacity-30" />
+                            <p className="text-sm">등록된 업체가 없습니다.</p>
+                        </div>
+                    ) : (
+                        <ul className="divide-y divide-border">
+                            {companies.map(c => (
+                                <li key={c.id} className="flex items-center gap-3 px-6 py-4 hover:bg-background-secondary transition-colors">
+                                    <div className="w-10 h-10 rounded-xl bg-background-secondary border border-border overflow-hidden shrink-0 flex items-center justify-center">
+                                        {c.icon_url
+                                            ? <img src={c.icon_url} alt={c.name} className="w-full h-full object-contain" />
+                                            : <Building2 className="w-5 h-5 text-foreground-muted opacity-40" />
+                                        }
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-bold text-foreground truncate">{c.name}</p>
+                                        <div className="flex gap-1.5 mt-0.5 flex-wrap">
+                                            {(c.badges ?? []).map(b => (
+                                                <span key={b} className="text-[11px] px-1.5 py-0.5 rounded bg-primary-light text-primary font-medium">{b}</span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        <button
+                                            onClick={() => handleToggle(c)}
+                                            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${c.is_active ? 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100' : 'bg-background-secondary text-foreground-muted border-border hover:border-primary/40'}`}
+                                        >
+                                            {c.is_active ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
+                                            {c.is_active ? '활성' : '비활성'}
+                                        </button>
+                                        <button
+                                            onClick={() => setEditTarget(c)}
+                                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-border bg-background-secondary text-foreground-muted hover:text-primary hover:border-primary/40 transition-colors"
+                                        >
+                                            <Pencil className="w-3.5 h-3.5" /> 수정
+                                        </button>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+interface AdminEditModalProps { company: CompanyDB; onClose: () => void; onSaved: () => void; }
+
+const AdminEditModal = ({ company, onClose, onSaved }: AdminEditModalProps) => {
+    const [form, setForm] = useState<NewCompany>({
+        name: company.name,
+        badges: company.badges ?? [],
+        icon_url: company.icon_url,
+        contact_link: company.contact_link,
+    });
+    const [badgeInput, setBadgeInput] = useState('');
+    const [uploading, setUploading] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState('');
+    const fileRef = useRef<HTMLInputElement>(null);
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setUploading(true);
+        const url = await uploadCompanyImage(file, company.owner_id);
+        setUploading(false);
+        if (url) setForm(f => ({ ...f, icon_url: url }));
+        else setError('이미지 업로드에 실패했습니다.');
+    };
+
+    const addBadge = () => {
+        const b = badgeInput.trim();
+        if (!b || form.badges.includes(b) || form.badges.length >= 4) return;
+        setForm(f => ({ ...f, badges: [...f.badges, b] }));
+        setBadgeInput('');
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!form.name.trim()) { setError('업체명을 입력해주세요.'); return; }
+        setSubmitting(true); setError('');
+        const { error: err } = await upsertCompany(company.owner_id, form, company.id);
+        setSubmitting(false);
+        if (err) { setError('저장에 실패했습니다.'); return; }
+        onSaved();
+    };
+
+    return (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+            <div className="relative bg-card rounded-3xl w-full max-w-lg shadow-card-lg animate-slide-up z-10 border border-border overflow-hidden">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+                    <h2 className="text-base font-bold text-foreground">업체 수정 — {company.name}</h2>
+                    <button onClick={onClose} className="text-foreground-muted hover:text-foreground bg-background-secondary rounded-full p-1.5 transition-colors"><X size={18} /></button>
+                </div>
+                <form onSubmit={handleSubmit} className="px-6 py-5 flex flex-col gap-4 max-h-[70vh] overflow-y-auto">
+                    <div>
+                        <label className="block text-xs font-semibold text-foreground-muted mb-2">배경 이미지</label>
+                        <div className="flex items-center gap-4">
+                            <div className="w-20 h-20 rounded-xl border-2 border-dashed border-border bg-background-secondary flex items-center justify-center overflow-hidden shrink-0">
+                                {form.icon_url ? <img src={form.icon_url} alt="preview" className="w-full h-full object-contain" /> : <ImagePlus className="w-7 h-7 text-foreground-muted opacity-40" />}
+                            </div>
+                            <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading} className="px-4 py-2 rounded-lg bg-background-secondary border border-border text-xs font-semibold text-foreground hover:border-primary/40 transition-colors flex items-center gap-2 disabled:opacity-60">
+                                {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImagePlus className="w-3.5 h-3.5" />}
+                                {uploading ? '업로드 중...' : '이미지 선택'}
+                            </button>
+                        </div>
+                        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold text-foreground-muted mb-1.5">업체명 *</label>
+                        <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} maxLength={30} className="w-full px-3 py-2.5 rounded-xl border border-border bg-background-secondary text-sm text-foreground focus:outline-none focus:border-primary transition-colors" />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold text-foreground-muted mb-1.5">뱃지 (최대 4개)</label>
+                        <div className="flex gap-2 mb-2 flex-wrap">
+                            {form.badges.map(b => (
+                                <span key={b} className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-primary-light text-primary border border-primary/20">
+                                    <Star className="w-3 h-3" />{b}
+                                    <button type="button" onClick={() => setForm(f => ({ ...f, badges: f.badges.filter(x => x !== b) }))} className="ml-0.5 hover:text-red-500 transition-colors"><X className="w-3 h-3" /></button>
+                                </span>
+                            ))}
+                        </div>
+                        {form.badges.length < 4 && (
+                            <div className="flex gap-2">
+                                <input type="text" value={badgeInput} onChange={e => setBadgeInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addBadge())} placeholder="뱃지 입력" maxLength={20} className="flex-1 px-3 py-2 rounded-xl border border-border bg-background-secondary text-sm text-foreground focus:outline-none focus:border-primary transition-colors" />
+                                <button type="button" onClick={addBadge} className="px-3 py-2 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary-dark transition-colors"><Plus className="w-4 h-4" /></button>
+                            </div>
+                        )}
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold text-foreground-muted mb-1.5 flex items-center gap-1"><Link className="w-3.5 h-3.5" />상담 링크</label>
+                        <input type="url" value={form.contact_link ?? ''} onChange={e => setForm(f => ({ ...f, contact_link: e.target.value || null }))} placeholder="https://line.me/..." className="w-full px-3 py-2.5 rounded-xl border border-border bg-background-secondary text-sm text-foreground focus:outline-none focus:border-primary transition-colors" />
+                    </div>
+                    {error && <p className="text-xs text-red-500 font-medium">{error}</p>}
+                    <button type="submit" disabled={submitting} className="w-full py-3 rounded-xl bg-primary hover:bg-primary-dark text-white font-bold text-sm transition-colors shadow-sm flex items-center justify-center gap-2 disabled:opacity-60">
+                        {submitting ? <><Loader2 className="w-4 h-4 animate-spin" />저장 중...</> : '저장하기'}
+                    </button>
+                </form>
             </div>
         </div>
     );

@@ -8,7 +8,7 @@ export async function signIn(email: string, password: string): Promise<UserProfi
     if (error) throw new Error(translateAuthError(error.message));
 
     const profile = await fetchProfile(data.user.id);
-    return profile ?? { id: data.user.id, email, nickname: email.split('@')[0], userType: 'buyer' };
+    return profile ?? { id: data.user.id, email, nickname: email.split('@')[0], userType: 'buyer', isAdmin: false };
 }
 
 export async function signUp(email: string, password: string, nickname: string, userType: UserType): Promise<UserProfile> {
@@ -24,7 +24,7 @@ export async function signUp(email: string, password: string, nickname: string, 
         user_type: userType,
     });
 
-    return { id: data.user.id, email, nickname, userType };
+    return { id: data.user.id, email, nickname, userType, isAdmin: false };
 }
 
 export async function signOut(): Promise<void> {
@@ -34,7 +34,7 @@ export async function signOut(): Promise<void> {
 export async function fetchProfile(userId: string): Promise<UserProfile | null> {
     const { data } = await supabase
         .from('profiles')
-        .select('id, nickname, user_type')
+        .select('id, nickname, user_type, is_admin')
         .eq('id', userId)
         .single();
 
@@ -45,6 +45,7 @@ export async function fetchProfile(userId: string): Promise<UserProfile | null> 
         email: userData.user?.email ?? '',
         nickname: data.nickname,
         userType: data.user_type as UserType,
+        isAdmin: data.is_admin ?? false,
     };
 }
 
