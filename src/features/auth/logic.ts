@@ -18,12 +18,6 @@ export async function signUp(email: string, password: string, nickname: string, 
     if (error) throw new Error(translateAuthError(error.message));
     if (!data.user) throw new Error('회원가입에 실패했습니다.');
 
-    await supabase.from('profiles').insert({
-        id: data.user.id,
-        nickname,
-        user_type: userType,
-    });
-
     return { id: data.user.id, email, nickname, userType, isAdmin: false };
 }
 

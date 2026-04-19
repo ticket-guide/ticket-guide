@@ -141,6 +141,7 @@ const SignupForm = ({ onSuccess }: { onSuccess: () => void }) => {
     const [nickname, setNickname] = useState('');
     const [showPw, setShowPw] = useState(false);
     const [error, setError] = useState('');
+    const [done, setDone] = useState(false);
 
     const pwMismatch = confirmPw.length > 0 && password !== confirmPw;
 
@@ -153,15 +154,29 @@ const SignupForm = ({ onSuccess }: { onSuccess: () => void }) => {
 
         setLoading(true);
         try {
-            const user = await signUp(email, password, nickname.trim(), 'buyer');
-            setUser(user);
-            onSuccess();
+            await signUp(email, password, nickname.trim(), 'buyer');
+            setDone(true);
         } catch (err: any) {
             setError(err.message);
         } finally {
             setLoading(false);
         }
     };
+
+    if (done) return (
+        <div className="flex flex-col items-center gap-4 py-6 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-primary-light flex items-center justify-center">
+                <Mail className="w-7 h-7 text-primary" />
+            </div>
+            <div>
+                <p className="text-base font-extrabold text-foreground">인증 이메일을 발송했습니다</p>
+                <p className="text-xs text-foreground-muted mt-1.5">
+                    <span className="font-semibold text-primary">{email}</span>로 전송된<br />
+                    인증 링크를 클릭한 후 로그인해주세요.
+                </p>
+            </div>
+        </div>
+    );
 
     return (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4" autoComplete="off">
