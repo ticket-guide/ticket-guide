@@ -11,18 +11,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     useEffect(() => {
         if (!isSupabaseConfigured) return;
 
-        supabase.auth.getSession().then(async ({ data }) => {
-            if (data.session?.user) {
-                const profile = await fetchProfile(data.session.user.id);
-                if (profile) setUser(profile);
-            }
-        });
-
+        // getSession()을 별도로 호출하지 않음 — onAuthStateChange의 INITIAL_SESSION 이벤트가 초기 세션을 처리
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_OUT') { setUser(null); return; }
             if (session?.user) {
                 const profile = await fetchProfile(session.user.id);
-                if (profile) { setUser(profile); closeModal(); }
+                if (profile) { setUser(profile); if (event !== 'INITIAL_SESSION') closeModal(); }
             }
         });
 
