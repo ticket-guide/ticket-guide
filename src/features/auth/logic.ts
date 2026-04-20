@@ -7,7 +7,8 @@ export async function signIn(email: string, password: string): Promise<UserProfi
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw new Error(translateAuthError(error.message));
 
-    const profile = await fetchProfile(data.user.id);
+    // email을 직접 전달해 getUser() 호출(lock 재획득) 방지
+    const profile = await fetchProfile(data.user.id, email);
     return profile ?? { id: data.user.id, email, nickname: email.split('@')[0], userType: 'buyer', isAdmin: false };
 }
 
@@ -28,7 +29,8 @@ export async function signOut(): Promise<void> {
     await supabase.auth.signOut();
 }
 
-export async function fetchProfile(userId: string): Promise<UserProfile | null> {
+// email을 직접 받아 supabase.auth.getUser() 호출을 피함 (onAuthStateChange 내부에서 lock 재획득 방지)
+export async function fetchProfile(userId: string, email?: string): Promise<UserProfile | null> {
     const { data } = await supabase
         .from('profiles')
         .select('id, nickname, user_type, is_admin')
@@ -36,10 +38,11 @@ export async function fetchProfile(userId: string): Promise<UserProfile | null> 
         .single();
 
     if (!data) return null;
-    const { data: userData } = await supabase.auth.getUser();
+
+    const resolvedEmail = email ?? (await supabase.auth.getUser()).data.user?.email ?? '';
     return {
         id: data.id,
-        email: userData.user?.email ?? '',
+        email: resolvedEmail,
         nickname: data.nickname,
         userType: data.user_type as UserType,
         isAdmin: data.is_admin ?? false,

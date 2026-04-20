@@ -12,10 +12,18 @@ export const isSupabaseConfigured =
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // 공개 데이터 전용 클라이언트 (auth lock 없이 즉시 쿼리 — 업체목록, 게시판, 공지사항)
+// no-op storage로 localStorage를 건드리지 않아 lock 경합 및 Multiple GoTrueClient 경고 제거
+const noopStorage = {
+    getItem: (_key: string) => null,
+    setItem: (_key: string, _value: string) => {},
+    removeItem: (_key: string) => {},
+};
+
 export const supabasePublic = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
         persistSession: false,
         autoRefreshToken: false,
         detectSessionInUrl: false,
+        storage: noopStorage,
     },
 });

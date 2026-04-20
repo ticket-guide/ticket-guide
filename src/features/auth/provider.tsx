@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_OUT') { setUser(null); return; }
             if (session?.user) {
-                const profile = await fetchProfile(session.user.id);
+                const profile = await fetchProfile(session.user.id, session.user.email);
                 if (profile) { setUser(profile); if (event !== 'INITIAL_SESSION') closeModal(); }
             }
         });
