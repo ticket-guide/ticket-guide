@@ -1,8 +1,8 @@
-import { supabase } from '@/lib/supabase';
+import { supabasePublic } from '@/lib/supabase';
 import { Notice } from './types';
 
 export async function fetchNotices(): Promise<Notice[]> {
-    const { data, error } = await supabase
+    const { data, error } = await supabasePublic
         .from('notices')
         .select('*')
         .order('is_pinned', { ascending: false })
@@ -13,7 +13,7 @@ export async function fetchNotices(): Promise<Notice[]> {
 }
 
 export async function fetchNotice(id: number): Promise<Notice | null> {
-    const { data, error } = await supabase
+    const { data, error } = await supabasePublic
         .from('notices')
         .select('*')
         .eq('id', id)

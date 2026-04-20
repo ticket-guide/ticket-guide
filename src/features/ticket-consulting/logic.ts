@@ -1,5 +1,5 @@
 import { Company, SellPost, SellPostDB, NewSellPost, CompanyDB, NewCompany, BuyPost, BuyPostDB, NewBuyPost } from './types';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabasePublic } from '@/lib/supabase';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 const formatTs = (ts: string) => {
@@ -10,7 +10,7 @@ const formatTs = (ts: string) => {
 /* ── Companies ── */
 
 export const fetchCompaniesFromDB = async (): Promise<Company[]> => {
-    const { data, error } = await supabase
+    const { data, error } = await supabasePublic
         .from('companies')
         .select('*')
         .eq('is_active', true)
@@ -97,7 +97,7 @@ const dbPostToSellPost = (p: SellPostDB): SellPost => ({
 });
 
 export const fetchSellPostsFromDB = async (): Promise<SellPost[]> => {
-    const { data, error } = await supabase
+    const { data, error } = await supabasePublic
         .from('sell_posts')
         .select('*, profiles(nickname)')
         .order('created_at', { ascending: false });
@@ -133,7 +133,7 @@ const dbPostToBuyPost = (p: BuyPostDB): BuyPost => ({
 });
 
 export const fetchBuyPostsFromDB = async (): Promise<BuyPost[]> => {
-    const { data, error } = await supabase
+    const { data, error } = await supabasePublic
         .from('buy_posts')
         .select('*, profiles(nickname)')
         .order('created_at', { ascending: false });
