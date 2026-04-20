@@ -25,5 +25,6 @@ export const supabasePublic = createClient(supabaseUrl, supabaseAnonKey, {
         autoRefreshToken: false,
         detectSessionInUrl: false,
         storage: noopStorage,
+        storageKey: 'sb-public-noop',  // 별도 key로 lock 충돌 및 Multiple GoTrueClient 경고 제거
     },
 });
