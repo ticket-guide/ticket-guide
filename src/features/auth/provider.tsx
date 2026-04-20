@@ -11,13 +11,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     useEffect(() => {
         if (!isSupabaseConfigured) return;
 
-        // getSession()을 별도로 호출하지 않음 — onAuthStateChange의 INITIAL_SESSION 이벤트가 초기 세션을 처리
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_OUT') { setUser(null); return; }
-            if (session?.user) {
-                const profile = await fetchProfile(session.user.id, session.user.email);
+            if (!session?.user) return;
+
+            const { id, email } = session.user;
+            // setTimeout(0)으로 onAuthStateChange lock 해제 후 실행
+            // — 콜백 내부에서 supabase 쿼리 시 getSession()이 lock을 재획득해 deadlock 발생하는 문제 방지
+            setTimeout(async () => {
+                const profile = await fetchProfile(id, email);
                 if (profile) { setUser(profile); if (event !== 'INITIAL_SESSION') closeModal(); }
-            }
+            }, 0);
         });
 
         return () => subscription.unsubscribe();
