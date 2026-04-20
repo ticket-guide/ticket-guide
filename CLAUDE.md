@@ -1,5 +1,8 @@
 # 상품권 예약판매 안내 가이드 웹
 
+# 에이전트 가이드
+- 문서정리나, chrome mcp를 사용할 때는 gemini 에이전트를 활용할 것
+
 ## 기술 스택
 - Next.js 15, React 19, TypeScript, Tailwind CSS, Zustand
 - Supabase (Auth + PostgreSQL + Realtime) — 무료 tier

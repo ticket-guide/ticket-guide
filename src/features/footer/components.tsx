@@ -8,10 +8,10 @@ const GUIDE_LINKS = [
     { label: '주의사항', href: '/#guide' },
 ];
 
-const POLICY_LINKS = [
-    { label: '이용약관', href: '/terms' },
-    { label: '개인정보처리방침', href: '/privacy' },
-];
+// const POLICY_LINKS = [
+//     { label: '이용약관', href: '/terms' },
+//     { label: '개인정보처리방침', href: '/privacy' },
+// ];
 
 const CS_LINKS = [
     { label: '공지사항', href: '/notices' },
@@ -77,7 +77,7 @@ export const Footer = () => {
                     </div>
 
                     {/* 약관 및 정책 */}
-                    <div>
+                    {/* <div>
                         <h4 className="text-sm font-bold text-foreground mb-3">약관 및 정책</h4>
                         <ul className="flex flex-col gap-2">
                             {POLICY_LINKS.map((link) => (
@@ -91,7 +91,7 @@ export const Footer = () => {
                                 </li>
                             ))}
                         </ul>
-                    </div>
+                    </div> */}
                 </div>
 
                 {/* 사업자 정보 + 저작권 */}
