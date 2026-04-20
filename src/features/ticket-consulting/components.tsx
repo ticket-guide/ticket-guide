@@ -7,9 +7,9 @@ import { ListingType, SellPost, NewSellPost, Company, BuyPost, NewBuyPost, Compa
 import { X, MessageCircle, BadgeCheck, Phone, ShoppingCart, Tag, CheckCircle2, PenSquare, ChevronRight, Loader2, Plus, Trash2, ImagePlus, Building2, Link, Star, Shield, ToggleLeft, ToggleRight, Pencil } from 'lucide-react';
 import { useAuthStore } from '@/features/auth/store';
 
-const TABS: { id: ListingType; label: string; desc: string; icon: React.ReactNode }[] = [
-    { id: 'buy',  label: '삽니다', desc: '상품권 매입 업체 · 개인 구매', icon: <ShoppingCart className="w-6 h-6" /> },
-    { id: 'sell', label: '팝니다', desc: '개인 판매 게시판',              icon: <Tag className="w-6 h-6" /> },
+const TABS: { id: ListingType; label: string }[] = [
+    { id: 'buy',  label: '삽니다' },
+    { id: 'sell', label: '팝니다' },
 ];
 
 export const CompanyListSection = () => {
@@ -62,22 +62,21 @@ export const CompanyListSection = () => {
         <section id="company-list-section" className="w-full scroll-mt-24">
 
             {/* 탭 */}
-            <div className="flex gap-3 mb-6">
+            <div className="flex border-b border-border mb-6 bg-card rounded-t-xl overflow-hidden">
                 {TABS.map((tab) => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex-1 flex items-center justify-center gap-3 py-4 sm:py-5 px-4 rounded-2xl font-extrabold transition-all ${
+                        className={`flex-1 py-3.5 text-base font-bold transition-all relative ${
                             activeTab === tab.id
-                                ? 'bg-primary text-white shadow-md ring-2 ring-primary/20'
-                                : 'bg-card border-2 border-border text-foreground-muted hover:border-primary/40 hover:text-primary'
+                                ? 'text-primary'
+                                : 'text-foreground-muted hover:text-foreground'
                         }`}
                     >
-                        {tab.icon}
-                        <div className="text-left">
-                            <div className="text-base sm:text-lg leading-tight">{tab.label}</div>
-                            <div className={`text-[11px] font-medium mt-0.5 hidden sm:block ${activeTab === tab.id ? 'text-white/75' : 'text-foreground-muted'}`}>{tab.desc}</div>
-                        </div>
+                        {tab.label}
+                        {activeTab === tab.id && (
+                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
+                        )}
                     </button>
                 ))}
             </div>
