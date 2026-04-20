@@ -327,7 +327,7 @@ interface CompanyCardProps {
 const CompanyCard = ({ company, index, onContact }: CompanyCardProps) => {
     return (
         <div
-            className="relative rounded-2xl overflow-hidden animate-fade-in flex flex-col shadow-card-md hover:shadow-card-lg hover:-translate-y-0.5 transition-all duration-300"
+            className="relative rounded-lg overflow-hidden animate-fade-in flex flex-col shadow-card-md hover:shadow-card-lg hover:-translate-y-0.5 transition-all duration-300"
             style={{ animationDelay: `${index * 80}ms`, minHeight: '220px' }}
         >
             <div className="absolute inset-0 bg-zinc-900" />
