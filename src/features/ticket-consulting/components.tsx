@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { useConsultingStore } from './store';
 import { fetchSellPostsFromDB, createSellPost, fetchCompaniesFromDB, fetchMyCompany, upsertCompany, uploadCompanyImage, fetchBuyPostsFromDB, createBuyPost, fetchAllCompaniesAdmin, toggleCompanyActive } from './logic';
 import { ListingType, SellPost, NewSellPost, Company, BuyPost, NewBuyPost, CompanyDB, NewCompany } from './types';
@@ -13,6 +14,7 @@ const TABS: { id: ListingType; label: string }[] = [
 ];
 
 export const CompanyListSection = () => {
+    const router = useRouter();
     const openModal = useConsultingStore((state) => state.openModal);
     const { user, openModal: openAuthModal } = useAuthStore();
     const [companies, setCompanies] = useState<Company[]>([]);
@@ -20,8 +22,6 @@ export const CompanyListSection = () => {
     const [buyPosts, setBuyPosts] = useState<BuyPost[]>([]);
     const [loadingPosts, setLoadingPosts] = useState(false);
     const [loadingBuyPosts, setLoadingBuyPosts] = useState(false);
-    const [showPostForm, setShowPostForm] = useState(false);
-    const [showBuyForm, setShowBuyForm] = useState(false);
     const [activeTab, setActiveTab] = useState<ListingType>('buy');
     const [offset, setOffset] = useState(0);
 
@@ -114,7 +114,7 @@ export const CompanyListSection = () => {
                             </div>
                             <button
                                 className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary-dark transition-colors shadow-sm"
-                                onClick={() => { if (!user) openAuthModal('login'); else setShowBuyForm(true); }}
+                                onClick={() => { if (!user) openAuthModal('login'); else router.push('/write?tab=buy'); }}
                             >
                                 <PenSquare className="w-3.5 h-3.5" />
                                 글쓰기
@@ -184,7 +184,7 @@ export const CompanyListSection = () => {
                         </div>
                         <button
                             className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary-dark transition-colors shadow-sm"
-                            onClick={() => { if (!user) openAuthModal('login'); else setShowPostForm(true); }}
+                            onClick={() => { if (!user) openAuthModal('login'); else router.push('/write?tab=sell'); }}
                         >
                             <PenSquare className="w-3.5 h-3.5" />
                             글쓰기
@@ -292,28 +292,6 @@ export const CompanyListSection = () => {
             )}
         </section>
 
-        {showPostForm && user && (
-            <SellPostFormModal
-                onClose={() => setShowPostForm(false)}
-                onSubmitted={() => {
-                    setShowPostForm(false);
-                    setLoadingPosts(true);
-                    fetchSellPostsFromDB().then((posts) => { setSellPosts(posts); setLoadingPosts(false); });
-                }}
-                userId={user.id}
-            />
-        )}
-        {showBuyForm && user && (
-            <BuyPostFormModal
-                onClose={() => setShowBuyForm(false)}
-                onSubmitted={() => {
-                    setShowBuyForm(false);
-                    setLoadingBuyPosts(true);
-                    fetchBuyPostsFromDB().then((posts) => { setBuyPosts(posts); setLoadingBuyPosts(false); });
-                }}
-                userId={user.id}
-            />
-        )}
     </>
     );
 };
