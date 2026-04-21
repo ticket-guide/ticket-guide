@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { X, Mail, Lock, User, LogIn, UserPlus, Eye, EyeOff, AlertCircle, Building2, Shield } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Mail, Lock, User, LogIn, UserPlus, Eye, EyeOff, AlertCircle, Building2, Shield, CheckCircle2, Loader2 } from 'lucide-react';
 import { CompanyManageModal, AdminCompanyPanel } from '@/features/ticket-consulting/components';
 import { useAuthStore } from './store';
 import { signIn, signUp, signOut } from './logic';
-import { isSupabaseConfigured } from '@/lib/supabase';
+import { isSupabaseConfigured, supabasePublic } from '@/lib/supabase';
 
 /* ───────────────────────────────────────────────
    AuthModal — 로그인 / 회원가입 모달
@@ -114,22 +114,43 @@ const LoginForm = ({ onSuccess }: { onSuccess: () => void }) => {
 /* ───────────────────────────────────────────────
    SignupForm
 ─────────────────────────────────────────────── */
+type NicknameStatus = 'idle' | 'checking' | 'available' | 'taken';
+
 const SignupForm = ({ onSuccess }: { onSuccess: () => void }) => {
     const { setUser, setLoading, isLoading } = useAuthStore();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPw, setConfirmPw] = useState('');
     const [nickname, setNickname] = useState('');
+    const [nicknameStatus, setNicknameStatus] = useState<NicknameStatus>('idle');
     const [showPw, setShowPw] = useState(false);
     const [error, setError] = useState('');
     const [done, setDone] = useState(false);
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const pwMismatch = confirmPw.length > 0 && password !== confirmPw;
+
+    // 닉네임 입력 시 debounce 중복 체크
+    useEffect(() => {
+        const trimmed = nickname.trim();
+        if (!trimmed) { setNicknameStatus('idle'); return; }
+
+        setNicknameStatus('checking');
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(async () => {
+            const { data } = await supabasePublic.rpc('check_nickname_available', { p_nickname: trimmed });
+            setNicknameStatus(data ? 'available' : 'taken');
+        }, 600);
+
+        return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+    }, [nickname]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         if (!nickname.trim()) { setError('닉네임을 입력해주세요.'); return; }
+        if (nicknameStatus === 'taken') { setError('이미 사용 중인 닉네임입니다.'); return; }
+        if (nicknameStatus === 'checking') { setError('닉네임 확인 중입니다. 잠시 후 다시 시도해주세요.'); return; }
         if (password.length < 6) { setError('비밀번호는 6자 이상이어야 합니다.'); return; }
         if (password !== confirmPw) { setError('비밀번호가 일치하지 않습니다.'); return; }
 
@@ -159,6 +180,15 @@ const SignupForm = ({ onSuccess }: { onSuccess: () => void }) => {
         </div>
     );
 
+    const nicknameHint = {
+        idle: null,
+        checking: <p className="text-xs text-foreground-muted mt-1.5 flex items-center gap-1"><Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" /> 확인 중...</p>,
+        available: <p className="text-xs text-emerald-600 mt-1.5 flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> 사용 가능한 닉네임입니다.</p>,
+        taken: <p className="text-xs text-red-500 mt-1.5 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5 shrink-0" /> 이미 사용 중인 닉네임입니다.</p>,
+    }[nicknameStatus];
+
+    const canSubmit = !isLoading && !pwMismatch && nicknameStatus !== 'taken' && nicknameStatus !== 'checking';
+
     return (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4" autoComplete="off">
             <div className="text-center mb-2">
@@ -176,7 +206,23 @@ const SignupForm = ({ onSuccess }: { onSuccess: () => void }) => {
             )}
 
             <InputField icon={<Mail className="w-4 h-4" />} type="email" placeholder="이메일" value={email} onChange={setEmail} autoComplete="email" required />
-            <InputField icon={<User className="w-4 h-4" />} type="text" placeholder="닉네임" value={nickname} onChange={setNickname} autoComplete="off" required />
+            <div>
+                <InputField
+                    icon={<User className="w-4 h-4" />}
+                    type="text"
+                    placeholder="닉네임"
+                    value={nickname}
+                    onChange={setNickname}
+                    autoComplete="off"
+                    required
+                    suffix={
+                        nicknameStatus === 'checking' ? <Loader2 className="w-4 h-4 text-foreground-muted animate-spin shrink-0" /> :
+                        nicknameStatus === 'available' ? <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> :
+                        nicknameStatus === 'taken' ? <AlertCircle className="w-4 h-4 text-red-500 shrink-0" /> : undefined
+                    }
+                />
+                {nicknameHint}
+            </div>
             <InputField icon={<Lock className="w-4 h-4" />} type={showPw ? 'text' : 'password'} placeholder="비밀번호 (6자 이상)" value={password} onChange={setPassword} autoComplete="new-password"
                 suffix={<button type="button" onClick={() => setShowPw(!showPw)} className="text-foreground-muted hover:text-foreground">{showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>} required />
             <div>
@@ -191,7 +237,7 @@ const SignupForm = ({ onSuccess }: { onSuccess: () => void }) => {
                 )}
             </div>
 
-            <button type="submit" disabled={isLoading || pwMismatch}
+            <button type="submit" disabled={!canSubmit}
                 className="w-full py-3 rounded-xl bg-primary hover:bg-primary-dark text-white font-bold text-sm shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed mt-1">
                 {isLoading ? '가입 중...' : '회원가입'}
             </button>
