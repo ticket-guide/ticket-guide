@@ -1,4 +1,4 @@
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { supabase, supabasePublic, isSupabaseConfigured } from '@/lib/supabase';
 import { UserProfile, UserType } from './types';
 
 export async function signIn(email: string, password: string): Promise<UserProfile> {
@@ -15,8 +15,8 @@ export async function signIn(email: string, password: string): Promise<UserProfi
 export async function signUp(email: string, password: string, nickname: string, userType: UserType): Promise<UserProfile> {
     if (!isSupabaseConfigured) throw new Error('Supabase가 설정되지 않았습니다. .env.local을 확인해주세요.');
 
-    const { data: existing } = await supabase.from('profiles').select('id').eq('nickname', nickname).maybeSingle();
-    if (existing) throw new Error('이미 사용 중인 닉네임입니다.');
+    const { data: available } = await supabasePublic.rpc('check_nickname_available', { p_nickname: nickname });
+    if (!available) throw new Error('이미 사용 중인 닉네임입니다.');
 
     const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { nickname } } });
     if (error) throw new Error(translateAuthError(error.message));
