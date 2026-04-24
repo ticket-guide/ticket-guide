@@ -90,8 +90,8 @@ export const CompanyListSection = () => {
                             <BadgeCheck className="text-primary w-5 h-5" />
                         </div>
                         <div>
-                            <h2 className="text-base sm:text-lg font-bold text-foreground">상품권 매입 업체 목록</h2>
-                            <p className="text-xs text-foreground-muted mt-0.5">인증된 검증 업체 · 총 {buyCompanies.length}개</p>
+                            <h2 className="text-base sm:text-lg font-bold text-foreground">제휴 구매자 목록</h2>
+                            <p className="text-xs text-foreground-muted mt-0.5">제휴구매자 · 총 {buyCompanies.length}개</p>
                         </div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 w-full mb-8">
@@ -105,12 +105,12 @@ export const CompanyListSection = () => {
                         ))}
                     </div>
 
-                    {/* 일반 구매 게시판 */}
+                    {/* 제휴 구매 게시판 */}
                     <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-card">
                         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
                             <div>
-                                <h2 className="text-base font-bold text-foreground">일반 구매 게시판</h2>
-                                <p className="text-xs text-foreground-muted mt-0.5">개인이 직접 상품권을 구매하는 게시글</p>
+                                <h2 className="text-base font-bold text-foreground">제휴 구매 게시판</h2>
+                                <p className="text-xs text-foreground-muted mt-0.5">제휴 구매자가 직접 상품권을 구매하는 게시글</p>
                             </div>
                             <button
                                 className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary-dark transition-colors shadow-sm"
