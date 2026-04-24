@@ -110,7 +110,7 @@ export const CompanyListSection = () => {
                         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
                             <div>
                                 <h2 className="text-base font-bold text-foreground">제휴 구매 게시판</h2>
-                                <p className="text-xs text-foreground-muted mt-0.5">제휴 구매자가 직접 상품권을 구매하는 게시글</p>
+                                <p className="text-xs text-foreground-muted mt-0.5">직접 상품권을 구매하는 게시글 목록</p>
                             </div>
                             <button
                                 className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary-dark transition-colors shadow-sm"
