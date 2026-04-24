@@ -238,5 +238,27 @@ CREATE TABLE sell_posts (
 - `SellPostFormModal`: 상품권 종류/제목/가격(협의 선택)/발송기한/태그/내용 입력 폼
 - 작성 후 목록 자동 새로고침
 
+## Supabase 유저 관리
+
+### 유저 삭제
+- Authentication > Users 대시보드에서 직접 삭제하면 **FK 제약 위반 에러** 발생
+- `profiles.id`가 `auth.users.id`를 참조하므로, **profiles를 먼저 삭제**한 후 auth.users를 삭제해야 함
+- SQL Editor에서 아래 쿼리 실행:
+```sql
+-- 1. profiles 먼저 삭제 (FK 제약 해제)
+DELETE FROM public.profiles WHERE id IN (
+  SELECT id FROM auth.users WHERE email IN ('삭제할@이메일.com')
+);
+-- 2. auth 유저 삭제
+DELETE FROM auth.users WHERE email IN ('삭제할@이메일.com');
+```
+- 근본 해결책: `profiles` FK에 `ON DELETE CASCADE` 추가 시 대시보드에서도 바로 삭제 가능
+
+### 트리거 (`handle_new_user`)
+- 회원가입 시 `auth.users` INSERT → 자동으로 `profiles`에도 INSERT
+- 닉네임 중복 시 suffix 붙여 재시도 (최대 100회)
+- `WHEN OTHERS THEN RETURN NEW` — 프로필 저장 실패해도 계정 생성은 항상 성공
+- 닉네임 중복 체크는 `check_nickname_available(p_nickname text)` SECURITY DEFINER RPC 사용
+
 ## 남은 작업 (미구현)
 - **AWS 배포** — `.env.local` 서버에 생성 후 `npm run build` + `pm2 restart` 필요
