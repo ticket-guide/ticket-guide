@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Menu, X, Bell, LogIn, Ticket } from 'lucide-react';
+import { Menu, X, Bell, LogIn, Ticket, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { useAuthStore } from '@/features/auth/store';
 import { UserAvatarButton } from '@/features/auth/components';
@@ -40,6 +40,13 @@ export const Header = () => {
                             </Link>
                         );
                     })}
+                    {user?.isAdmin && (
+                        <Link href="/admin"
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-foreground-muted hover:text-primary hover:bg-primary-light transition-colors">
+                            <ShieldCheck className="w-4 h-4" />
+                            회원관리
+                        </Link>
+                    )}
                 </nav>
 
                 {/* PC 우측 */}
@@ -85,6 +92,14 @@ export const Header = () => {
                             </Link>
                         );
                     })}
+                    {user?.isAdmin && (
+                        <Link href="/admin"
+                            className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-foreground hover:bg-background-secondary transition-colors"
+                            onClick={() => setMobileOpen(false)}>
+                            <ShieldCheck className="w-4 h-4 text-primary" />
+                            회원관리
+                        </Link>
+                    )}
                     <div className="flex gap-2 mt-1 pt-2 border-t border-border">
                         {user ? (
                             <div className="flex-1"><UserAvatarButton /></div>
