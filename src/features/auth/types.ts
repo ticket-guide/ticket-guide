@@ -1,4 +1,4 @@
-export type UserType = 'buyer' | 'seller' | 'admin';
+export type UserType = 'affiliate' | 'general';
 
 export interface UserProfile {
     id: string;

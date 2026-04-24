@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Shield, ShieldOff, Loader2, RefreshCw, Users, Trash2 } from 'lucide-react';
 import { useAuthStore } from '@/features/auth/store';
-import { fetchAllMembers, setAdminStatus, deleteUserById, formatDate } from './logic';
+import { fetchAllMembers, setAdminStatus, setUserType, deleteUserById, formatDate } from './logic';
 import { MemberRow } from './types';
 
 export const AdminContent = () => {
@@ -14,6 +14,7 @@ export const AdminContent = () => {
     const [loading, setLoading] = useState(true);
     const [togglingId, setTogglingId] = useState<string | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [changingTypeId, setChangingTypeId] = useState<string | null>(null);
 
     useEffect(() => {
         if (!user) { router.replace('/'); return; }
@@ -33,6 +34,14 @@ export const AdminContent = () => {
         setTogglingId(member.id);
         await setAdminStatus(member.id, !member.is_admin);
         setTogglingId(null);
+        load();
+    };
+
+    const handleChangeType = async (member: MemberRow) => {
+        setChangingTypeId(member.id);
+        const next = member.user_type === 'affiliate' ? 'general' : 'affiliate';
+        await setUserType(member.id, next);
+        setChangingTypeId(null);
         load();
     };
 
@@ -86,7 +95,7 @@ export const AdminContent = () => {
                             <thead>
                                 <tr className="border-b border-border bg-background/50">
                                     <th className="text-left px-5 py-3.5 text-xs font-semibold text-foreground-muted uppercase tracking-wide">닉네임</th>
-                                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-foreground-muted uppercase tracking-wide">유형</th>
+                                    <th className="text-center px-5 py-3.5 text-xs font-semibold text-foreground-muted uppercase tracking-wide">유형</th>
                                     <th className="text-left px-5 py-3.5 text-xs font-semibold text-foreground-muted uppercase tracking-wide">가입일</th>
                                     <th className="text-center px-5 py-3.5 text-xs font-semibold text-foreground-muted uppercase tracking-wide">관리자</th>
                                     <th className="text-center px-5 py-3.5 text-xs font-semibold text-foreground-muted uppercase tracking-wide">권한 변경</th>
@@ -112,10 +121,20 @@ export const AdminContent = () => {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-5 py-4">
-                                            <span className="text-xs px-2 py-1 rounded-md bg-background border border-border text-foreground-muted">
-                                                {m.user_type === 'seller' ? '판매자' : '구매자'}
-                                            </span>
+                                        <td className="px-5 py-4 text-center">
+                                            <button
+                                                onClick={() => handleChangeType(m)}
+                                                disabled={changingTypeId === m.id}
+                                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold border transition-colors disabled:opacity-50 ${
+                                                    m.user_type === 'affiliate'
+                                                        ? 'bg-violet-50 border-violet-200 text-violet-600 hover:bg-violet-100'
+                                                        : 'bg-background border-border text-foreground-muted hover:border-primary/40 hover:text-primary'
+                                                }`}
+                                            >
+                                                {changingTypeId === m.id
+                                                    ? <Loader2 className="w-3 h-3 animate-spin" />
+                                                    : m.user_type === 'affiliate' ? '제휴' : '일반'}
+                                            </button>
                                         </td>
                                         <td className="px-5 py-4 text-sm text-foreground-muted">
                                             {formatDate(m.created_at)}

@@ -156,7 +156,7 @@ const SignupForm = ({ onSuccess }: { onSuccess: () => void }) => {
 
         setLoading(true);
         try {
-            await signUp(email, password, nickname.trim(), 'buyer');
+            await signUp(email, password, nickname.trim(), 'general');
             setDone(true);
         } catch (err: any) {
             setError(err.message);
@@ -314,7 +314,7 @@ export const UserAvatarButton = () => {
                             <p className="text-xs font-semibold text-foreground">{user.nickname}</p>
                             <p className="text-xs text-foreground-muted truncate">{user.email}</p>
                         </div>
-                        {user.userType === 'seller' && (
+                        {user.userType === 'affiliate' && (
                             <button
                                 onClick={() => { setShowManage(true); setOpen(false); }}
                                 className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-background-secondary transition-colors flex items-center gap-2"

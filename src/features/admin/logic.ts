@@ -14,6 +14,10 @@ export async function setAdminStatus(userId: string, isAdmin: boolean) {
     return supabase.from('profiles').update({ is_admin: isAdmin }).eq('id', userId);
 }
 
+export async function setUserType(userId: string, userType: 'affiliate' | 'general') {
+    return supabase.from('profiles').update({ user_type: userType }).eq('id', userId);
+}
+
 export async function deleteUserById(userId: string) {
     return supabase.rpc('delete_user_by_id', { target_user_id: userId });
 }

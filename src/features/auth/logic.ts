@@ -9,7 +9,7 @@ export async function signIn(email: string, password: string): Promise<UserProfi
 
     // email을 직접 전달해 getUser() 호출(lock 재획득) 방지
     const profile = await fetchProfile(data.user.id, email);
-    return profile ?? { id: data.user.id, email, nickname: email.split('@')[0], userType: 'buyer', isAdmin: false };
+    return profile ?? { id: data.user.id, email, nickname: email.split('@')[0], userType: 'general', isAdmin: false };
 }
 
 export async function signUp(email: string, password: string, nickname: string, userType: UserType): Promise<UserProfile> {
