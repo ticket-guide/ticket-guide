@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Shield, ShieldOff, Loader2, RefreshCw, Users } from 'lucide-react';
+import { Shield, ShieldOff, Loader2, RefreshCw, Users, Trash2 } from 'lucide-react';
 import { useAuthStore } from '@/features/auth/store';
-import { fetchAllMembers, setAdminStatus, formatDate } from './logic';
+import { fetchAllMembers, setAdminStatus, deleteUserById, formatDate } from './logic';
 import { MemberRow } from './types';
 
 export const AdminContent = () => {
@@ -13,6 +13,7 @@ export const AdminContent = () => {
     const [members, setMembers] = useState<MemberRow[]>([]);
     const [loading, setLoading] = useState(true);
     const [togglingId, setTogglingId] = useState<string | null>(null);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
 
     useEffect(() => {
         if (!user) { router.replace('/'); return; }
@@ -28,10 +29,20 @@ export const AdminContent = () => {
     };
 
     const handleToggleAdmin = async (member: MemberRow) => {
-        if (member.id === user?.id) return; // 자기 자신은 변경 불가
+        if (member.id === user?.id) return;
         setTogglingId(member.id);
         await setAdminStatus(member.id, !member.is_admin);
         setTogglingId(null);
+        load();
+    };
+
+    const handleDelete = async (member: MemberRow) => {
+        if (member.id === user?.id) return;
+        if (!window.confirm(`"${member.nickname}" 회원을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) return;
+        setDeletingId(member.id);
+        const { error } = await deleteUserById(member.id);
+        setDeletingId(null);
+        if (error) { alert('삭제에 실패했습니다: ' + error.message); return; }
         load();
     };
 
@@ -79,6 +90,7 @@ export const AdminContent = () => {
                                     <th className="text-left px-5 py-3.5 text-xs font-semibold text-foreground-muted uppercase tracking-wide">가입일</th>
                                     <th className="text-center px-5 py-3.5 text-xs font-semibold text-foreground-muted uppercase tracking-wide">관리자</th>
                                     <th className="text-center px-5 py-3.5 text-xs font-semibold text-foreground-muted uppercase tracking-wide">권한 변경</th>
+                                    <th className="text-center px-5 py-3.5 text-xs font-semibold text-foreground-muted uppercase tracking-wide">삭제</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -140,6 +152,23 @@ export const AdminContent = () => {
                                                 </button>
                                             )}
                                         </td>
+                                        <td className="px-5 py-4 text-center">
+                                            {m.id === user?.id ? (
+                                                <span className="text-xs text-foreground-muted">—</span>
+                                            ) : (
+                                                <button
+                                                    onClick={() => handleDelete(m)}
+                                                    disabled={deletingId === m.id}
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-red-200 text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
+                                                >
+                                                    {deletingId === m.id ? (
+                                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                                    ) : (
+                                                        <><Trash2 className="w-3 h-3" />삭제</>
+                                                    )}
+                                                </button>
+                                            )}
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -148,7 +177,7 @@ export const AdminContent = () => {
                 </div>
 
                 <p className="text-xs text-foreground-muted text-center mt-4">
-                    회원 삭제는 Supabase 대시보드 SQL Editor에서 진행해주세요.
+                    본인 계정은 삭제·권한 변경이 불가합니다.
                 </p>
             </div>
         </div>

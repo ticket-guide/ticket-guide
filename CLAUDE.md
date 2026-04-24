@@ -11,14 +11,14 @@
 ## 로컬 개발
 - `npm run dev` — 로컬 개발 서버 (포트 3000)
 - **주의**: dev 서버가 멈추면 React hydration이 안 됨 → `npm run dev` 재실행 필요
-- dev 서버가 꺼진 상태에서 PM2 정적 서버만 실행되면 JS 번들이 404로 뜸
 
-## 배포 (AWS Ubuntu 환경)
-- 로컬 개발 후 `main` 브랜치에 코드를 `git push` 하여 백업 및 전송
-- AWS 서버에서 `git pull` 진행 후 아래 과정 순차 실행
-  1. `npm install` (신규 패키지 추가 시)
-  2. `npm run build` (정적 HTML 파일 `out/` 결과물 신규 생성)
-  3. `pm2 restart ticket-guide` (최신 빌드 버전으로 서버 갱신)
+## 배포 (Vercel)
+- `main` 브랜치에 `git push` 하면 Vercel이 자동으로 빌드·배포
+- 환경변수는 Vercel 대시보드 → Project Settings → Environment Variables에서 설정
+  - `NEXT_PUBLIC_SUPABASE_URL`
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- 빌드 명령: `npm run build` (Vercel이 자동 실행)
+- 출력 디렉토리: `out/` (정적 export 유지)
 
 ## 코드 관리
 - main 브랜치로 코드 관리
