@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Shield, ShieldOff, Loader2, RefreshCw, Users, Trash2 } from 'lucide-react';
+import { Shield, Loader2, RefreshCw, Users, Trash2 } from 'lucide-react';
 import { useAuthStore } from '@/features/auth/store';
 import { fetchAllMembers, setAdminStatus, setUserType, deleteUserById, formatDate } from './logic';
 import { MemberRow } from './types';
@@ -29,10 +29,9 @@ export const AdminContent = () => {
         setLoading(false);
     };
 
-    const handleToggleAdmin = async (member: MemberRow) => {
-        if (member.id === user?.id) return;
+    const handleToggleAdmin = async (member: MemberRow, isAdmin: boolean) => {
         setTogglingId(member.id);
-        await setAdminStatus(member.id, !member.is_admin);
+        await setAdminStatus(member.id, isAdmin);
         setTogglingId(null);
         load();
     };
@@ -97,8 +96,7 @@ export const AdminContent = () => {
                                     <th className="text-left px-5 py-3.5 text-xs font-semibold text-foreground-muted uppercase tracking-wide">닉네임</th>
                                     <th className="text-center px-5 py-3.5 text-xs font-semibold text-foreground-muted uppercase tracking-wide">유형</th>
                                     <th className="text-left px-5 py-3.5 text-xs font-semibold text-foreground-muted uppercase tracking-wide">가입일</th>
-                                    <th className="text-center px-5 py-3.5 text-xs font-semibold text-foreground-muted uppercase tracking-wide">관리자</th>
-                                    <th className="text-center px-5 py-3.5 text-xs font-semibold text-foreground-muted uppercase tracking-wide">권한 변경</th>
+                                    <th className="text-center px-5 py-3.5 text-xs font-semibold text-foreground-muted uppercase tracking-wide">권한</th>
                                     <th className="text-center px-5 py-3.5 text-xs font-semibold text-foreground-muted uppercase tracking-wide">삭제</th>
                                 </tr>
                             </thead>
@@ -143,35 +141,25 @@ export const AdminContent = () => {
                                             {formatDate(m.created_at)}
                                         </td>
                                         <td className="px-5 py-4 text-center">
-                                            {m.is_admin ? (
+                                            {m.id === user?.id ? (
                                                 <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
                                                     <Shield className="w-3 h-3" /> 관리자
                                                 </span>
+                                            ) : togglingId === m.id ? (
+                                                <Loader2 className="w-4 h-4 animate-spin text-primary mx-auto" />
                                             ) : (
-                                                <span className="text-xs text-foreground-muted">일반</span>
-                                            )}
-                                        </td>
-                                        <td className="px-5 py-4 text-center">
-                                            {m.id === user?.id ? (
-                                                <span className="text-xs text-foreground-muted">변경 불가</span>
-                                            ) : (
-                                                <button
-                                                    onClick={() => handleToggleAdmin(m)}
-                                                    disabled={togglingId === m.id}
-                                                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors disabled:opacity-50 ${
+                                                <select
+                                                    value={m.is_admin ? 'admin' : 'member'}
+                                                    onChange={e => handleToggleAdmin(m, e.target.value === 'admin')}
+                                                    className={`px-2 py-1 rounded-md text-xs font-semibold border cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors ${
                                                         m.is_admin
-                                                            ? 'border-red-200 text-red-500 hover:bg-red-50'
-                                                            : 'border-primary/30 text-primary hover:bg-primary/10'
+                                                            ? 'bg-primary/10 border-primary/30 text-primary'
+                                                            : 'bg-background border-border text-foreground-muted'
                                                     }`}
                                                 >
-                                                    {togglingId === m.id ? (
-                                                        <Loader2 className="w-3 h-3 animate-spin" />
-                                                    ) : m.is_admin ? (
-                                                        <><ShieldOff className="w-3 h-3" />해제</>
-                                                    ) : (
-                                                        <><Shield className="w-3 h-3" />부여</>
-                                                    )}
-                                                </button>
+                                                    <option value="admin">관리자</option>
+                                                    <option value="member">일반</option>
+                                                </select>
                                             )}
                                         </td>
                                         <td className="px-5 py-4 text-center">
