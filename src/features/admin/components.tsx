@@ -37,9 +37,9 @@ export const AdminContent = () => {
         load();
     };
 
-    const handleChangeType = async (member: MemberRow) => {
+    const handleChangeType = async (member: MemberRow, next: 'affiliate' | 'general') => {
+        if (next === member.user_type) return;
         setChangingTypeId(member.id);
-        const next = member.user_type === 'affiliate' ? 'general' : 'affiliate';
         await setUserType(member.id, next);
         setChangingTypeId(null);
         load();
@@ -122,19 +122,22 @@ export const AdminContent = () => {
                                             </div>
                                         </td>
                                         <td className="px-5 py-4 text-center">
-                                            <button
-                                                onClick={() => handleChangeType(m)}
-                                                disabled={changingTypeId === m.id}
-                                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold border transition-colors disabled:opacity-50 ${
-                                                    m.user_type === 'affiliate'
-                                                        ? 'bg-violet-50 border-violet-200 text-violet-600 hover:bg-violet-100'
-                                                        : 'bg-background border-border text-foreground-muted hover:border-primary/40 hover:text-primary'
-                                                }`}
-                                            >
-                                                {changingTypeId === m.id
-                                                    ? <Loader2 className="w-3 h-3 animate-spin" />
-                                                    : m.user_type === 'affiliate' ? '제휴' : '일반'}
-                                            </button>
+                                            {changingTypeId === m.id ? (
+                                                <Loader2 className="w-4 h-4 animate-spin text-primary mx-auto" />
+                                            ) : (
+                                                <select
+                                                    value={m.user_type}
+                                                    onChange={e => handleChangeType(m, e.target.value as 'affiliate' | 'general')}
+                                                    className={`px-2 py-1 rounded-md text-xs font-semibold border cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors ${
+                                                        m.user_type === 'affiliate'
+                                                            ? 'bg-violet-50 border-violet-200 text-violet-600'
+                                                            : 'bg-background border-border text-foreground-muted'
+                                                    }`}
+                                                >
+                                                    <option value="affiliate">제휴</option>
+                                                    <option value="general">일반</option>
+                                                </select>
+                                            )}
                                         </td>
                                         <td className="px-5 py-4 text-sm text-foreground-muted">
                                             {formatDate(m.created_at)}
